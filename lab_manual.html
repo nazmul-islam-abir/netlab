@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CN Lab Manual | Computer Networks Lab Manual PDF Reader</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #1a2c3e;
+            line-height: 1.5;
+        }
+
+        /* Header */
+        .lab-manual-header {
+            background: linear-gradient(135deg, #0a2a3b 0%, #0f3b4f 100%);
+            padding: 2rem 2rem 1.5rem;
+            color: white;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header-content h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .header-content p {
+            margin-top: 0.5rem;
+            opacity: 0.9;
+        }
+
+        .badge {
+            background: rgba(255,255,255,0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 40px;
+            font-size: 0.85rem;
+        }
+
+        /* PDF Viewer Container */
+        .pdf-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .pdf-viewer-wrapper {
+            background: white;
+            border-radius: 24px;
+            border: 1px solid #e1e8f0;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        }
+
+        .pdf-toolbar {
+            background: #f8f9fa;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e1e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .pdf-controls {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .pdf-btn {
+            background: white;
+            border: 1px solid #d1d9e6;
+            padding: 0.5rem 1rem;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .pdf-btn:hover {
+            background: #eef2f5;
+            border-color: #0f3b4f;
+        }
+
+        .pdf-btn.download {
+            background: #0f3b4f;
+            border-color: #0f3b4f;
+            color: white;
+        }
+
+        .pdf-btn.download:hover {
+            background: #1a5f7a;
+        }
+
+        .page-info {
+            font-size: 0.85rem;
+            color: #546e7a;
+            padding: 0.25rem 0.75rem;
+            background: #eef2f5;
+            border-radius: 40px;
+        }
+
+        .zoom-control {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .zoom-control span {
+            font-size: 0.8rem;
+            color: #546e7a;
+        }
+
+        /* PDF Viewer iframe */
+        .pdf-viewer {
+            width: 100%;
+            height: 85vh;
+            border: none;
+            background: #f0f2f5;
+        }
+
+        /* Alternative viewer for browsers that don't support PDF embed */
+        .fallback-message {
+            display: none;
+            text-align: center;
+            padding: 3rem;
+            background: #fef3c7;
+            margin: 1rem;
+            border-radius: 16px;
+        }
+
+        .fallback-message a {
+            color: #0f3b4f;
+            font-weight: 600;
+        }
+
+        /* Info Section */
+        .info-section {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            border: 1px solid #e1e8f0;
+        }
+
+        .info-section h3 {
+            color: #0f3b4f;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .lab-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 0.8rem;
+            margin-top: 1rem;
+        }
+
+        .lab-list-item {
+            padding: 0.5rem;
+            border-bottom: 1px solid #eef2f5;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .lab-list-item .num {
+            background: #0f3b4f;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 3rem;
+            background: #0a2a3b;
+            border-radius: 20px;
+            padding: 2rem;
+            color: #b0c4d4;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .pdf-container {
+                padding: 0 1rem;
+            }
+            .pdf-viewer {
+                height: 70vh;
+            }
+            .pdf-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .pdf-controls {
+                justify-content: center;
+            }
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        /* Fullscreen mode */
+        .pdf-viewer-wrapper.fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 10000;
+            margin: 0;
+            border-radius: 0;
+        }
+
+        .fullscreen .pdf-viewer {
+            height: calc(100vh - 60px);
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navbar will be loaded here -->
+<div id="navbar-container"></div>
+
+<!-- Lab Manual Header -->
+<div class="lab-manual-header">
+    <div class="header-content">
+        <div>
+            <h1>
+                <span>📖</span> Computer Networks Lab Manual
+            </h1>
+            <p>Complete Lab Guide with 12 Experiments | Cisco Packet Tracer Labs | Socket Programming</p>
+        </div>
+        <div class="badge">📚 12 Experiments | 🔬 Step-by-Step Guide</div>
+    </div>
+</div>
+
+<!-- PDF Viewer Section -->
+<div class="pdf-container">
+    <div class="pdf-viewer-wrapper" id="pdfWrapper">
+        <div class="pdf-toolbar">
+            <div class="pdf-controls">
+                <button class="pdf-btn" id="zoomOut" title="Zoom Out">🔍− Zoom Out</button>
+                <button class="pdf-btn" id="zoomIn" title="Zoom In">🔍+ Zoom In</button>
+                <span class="page-info" id="pageInfo">PDF Document</span>
+            </div>
+            <div class="pdf-controls">
+                <button class="pdf-btn" id="fullscreenBtn" title="Fullscreen">🖥️ Fullscreen</button>
+                <button class="pdf-btn download" id="downloadBtn" title="Download PDF">⬇ Download PDF</button>
+            </div>
+        </div>
+        
+        <!-- PDF Embed -->
+        <iframe id="pdfViewer" class="pdf-viewer" src="CN_lab_manual.pdf#toolbar=0&navpanes=1&scrollbar=1" title="CN Lab Manual"></iframe>
+    </div>
+
+    <!-- Fallback message for browsers that don't support PDF -->
+    <div id="fallbackMessage" class="fallback-message" style="display: none;">
+        <p>⚠️ Your browser cannot display PDF files directly.</p>
+        <p>Please <a href="CN_lab_manual.pdf" download>click here to download the PDF</a> or use a modern browser like Chrome, Firefox, or Edge.</p>
+    </div>
+
+    <!-- Lab Manual Contents Info -->
+    <div class="info-section">
+        <h3>📋 Lab Manual Contents</h3>
+        <div class="lab-list">
+            <div class="lab-list-item"><span class="num">1</span> Introduction to Network Cables & LAN Cable Fabrication</div>
+            <div class="lab-list-item"><span class="num">2</span> Introduction to Cisco Packet Tracer</div>
+            <div class="lab-list-item"><span class="num">3</span> Basic Router Configuration</div>
+            <div class="lab-list-item"><span class="num">4</span> Application Layer Services (DHCP, DNS, HTTP, Email)</div>
+            <div class="lab-list-item"><span class="num">5</span> Sub-netting and VLSM</div>
+            <div class="lab-list-item"><span class="num">6</span> Routing Protocol Configuration (Static, RIP, OSPF)</div>
+            <div class="lab-list-item"><span class="num">7</span> Network Address Translation (NAT)</div>
+            <div class="lab-list-item"><span class="num">8</span> Access Control List (ACL)</div>
+            <div class="lab-list-item"><span class="num">9</span> Inter-VLAN Routing</div>
+            <div class="lab-list-item"><span class="num">10</span> Wireless Router Configuration</div>
+            <div class="lab-list-item"><span class="num">11</span> IPv6 Configuration</div>
+            <div class="lab-list-item"><span class="num">12</span> UDP and TCP Socket Programming (Python)</div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+    <p>📌 Computer Networks Lab Manual | Complete Guide for Cisco Packet Tracer Labs</p>
+    <p style="margin-top: 0.5rem; font-size: 0.75rem;">© 2026 · Department of Computer Science & Engineering</p>
+</div>
+
+<script>
+    // Load navbar
+    fetch('navbar.html')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('navbar-container').innerHTML = data;
+            
+            // Re-run navbar initialization
+            if (typeof window.initNavbar === 'undefined') {
+                setTimeout(() => {
+                    const navScript = document.querySelector('#navbar-container script');
+                    if (navScript) {
+                        eval(navScript.textContent);
+                    }
+                }, 50);
+            }
+        })
+        .catch(error => console.error('Navbar loading error:', error));
+
+    // PDF Viewer Controls
+    const pdfFrame = document.getElementById('pdfViewer');
+    let currentZoom = 1.0;
+
+    function updateZoom() {
+        // Apply zoom using CSS transform on iframe content
+        // Note: This works best when the PDF viewer supports it
+        pdfFrame.style.transform = `scale(${currentZoom})`;
+        pdfFrame.style.transformOrigin = 'top left';
+        pdfFrame.style.width = `${100 / currentZoom}%`;
+        pdfFrame.style.height = `${85 / currentZoom}vh`;
+        
+        const wrapper = document.querySelector('.pdf-viewer-wrapper');
+        wrapper.style.overflow = currentZoom > 1 ? 'auto' : 'visible';
+    }
+
+    // Zoom In
+    document.getElementById('zoomIn')?.addEventListener('click', () => {
+        if (currentZoom < 2.0) {
+            currentZoom += 0.1;
+            updateZoom();
+        }
+    });
+
+    // Zoom Out
+    document.getElementById('zoomOut')?.addEventListener('click', () => {
+        if (currentZoom > 0.5) {
+            currentZoom -= 0.1;
+            updateZoom();
+        }
+    });
+
+    // Fullscreen
+    document.getElementById('fullscreenBtn')?.addEventListener('click', () => {
+        const wrapper = document.getElementById('pdfWrapper');
+        if (!document.fullscreenElement) {
+            wrapper.requestFullscreen().catch(err => {
+                console.log(`Error attempting fullscreen: ${err.message}`);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    });
+
+    // Download PDF
+    document.getElementById('downloadBtn')?.addEventListener('click', () => {
+        const link = document.createElement('a');
+        link.href = 'CN_lab_manual.pdf';
+        link.download = 'CN_Lab_Manual.pdf';
+        link.click();
+    });
+
+    // Check if PDF can be displayed
+    function checkPDFSupport() {
+        const pdfFrame = document.getElementById('pdfViewer');
+        if (pdfFrame) {
+            // Some browsers may not load PDF, fallback check
+            setTimeout(() => {
+                try {
+                    const doc = pdfFrame.contentDocument;
+                    if (doc && doc.body && doc.body.innerHTML.includes('cannot') || doc.body.innerHTML.includes('missing')) {
+                        document.getElementById('fallbackMessage').style.display = 'block';
+                    }
+                } catch(e) {
+                    // Cross-origin issues, assume PDF is working
+                }
+            }, 2000);
+        }
+    }
+    
+    checkPDFSupport();
+
+    // Reset zoom on fullscreen change
+    document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement) {
+            currentZoom = 1.0;
+            updateZoom();
+        }
+    });
+</script>
+
+<style>
+    /* Additional styles for fullscreen */
+    .pdf-viewer-wrapper:-webkit-full-screen {
+        width: 100%;
+        height: 100%;
+        background: #1a1a2e;
+    }
+    .pdf-viewer-wrapper:-webkit-full-screen .pdf-viewer {
+        height: calc(100vh - 80px);
+    }
+    .pdf-viewer-wrapper:fullscreen {
+        width: 100%;
+        height: 100%;
+        background: #1a1a2e;
+    }
+    .pdf-viewer-wrapper:fullscreen .pdf-viewer {
+        height: calc(100vh - 80px);
+    }
+    .pdf-viewer-wrapper:fullscreen .pdf-toolbar {
+        background: #1a1a2e;
+        border-bottom-color: #333;
+    }
+    .pdf-viewer-wrapper:fullscreen .pdf-btn {
+        background: #2d2d44;
+        border-color: #444;
+        color: white;
+    }
+</style>
+</body>
+</html>

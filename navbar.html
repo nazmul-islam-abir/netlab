@@ -307,6 +307,12 @@
                         <span>Smart Home IoT</span>
                     </a>
                 </li>
+                <li class="nav-item">
+    <a href="#" class="nav-link" data-nav="lab_manual">
+        <span class="nav-icon">📖</span>
+        <span>Lab Manual</span>
+    </a>
+</li>
             </ul>
         </div>
     </nav>
@@ -315,24 +321,21 @@
 <script>
     (function() {
         // -------- Helper: detect which page we are on based on URL or body classes --------
-        function getCurrentPageId() {
-            const path = window.location.pathname;
-            const filename = path.split('/').pop();
-            
-            // Check for home page (index.html or empty)
-            if (filename === 'index.html' || filename === '' || filename === '/' || filename === 'index') {
-                return 'home';
-            }
-            
-            // mapping filenames -> nav identifiers
-            if (filename.includes('vlan') || filename.includes('vlan_subnet')) return 'vlan';
-            if (filename.includes('ospf_rip') || filename.includes('rip_ospf')) return 'rip_ospf';
-            if (filename.includes('applicationLayer') || filename.includes('app_layer')) return 'app_layer';
-            if (filename.includes('smart_home') || filename.includes('home')) return 'smart_home';
-            
-            // fallback: default to home
-            return 'home';
-        }
+       function getCurrentPageId() {
+    const path = window.location.pathname;
+    const filename = path.split('/').pop();
+    
+    if (filename === 'index.html' || filename === '' || filename === '/' || filename === 'index') {
+        return 'home';
+    }
+    if (filename.includes('lab_manual') || filename.includes('CN_lab_manual')) return 'lab_manual';  // Add this line
+    if (filename.includes('vlan') || filename.includes('vlan_subnet')) return 'vlan';
+    if (filename.includes('ospf_rip') || filename.includes('rip_ospf')) return 'rip_ospf';
+    if (filename.includes('applicationLayer') || filename.includes('app_layer')) return 'app_layer';
+    if (filename.includes('smart_home') || filename.includes('home')) return 'smart_home';
+    
+    return 'home';
+}
 
         // Mark active link based on current page
         function setActiveNavLink() {
@@ -350,21 +353,23 @@
 
         // Navigation mapping: define the relative URL for each page
         function getPageUrl(navId) {
-            switch(navId) {
-                case 'home':
-                    return './index.html';
-                case 'vlan':
-                    return './vlan_subnet.html';
-                case 'rip_ospf':
-                    return './ospf_rip.html';
-                case 'app_layer':
-                    return './applicationLayer.html';
-                case 'smart_home':
-                    return './smart_home.html';
-                default:
-                    return './index.html';
-            }
-        }
+    switch(navId) {
+        case 'home':
+            return './index.html';
+        case 'vlan':
+            return './vlan_subnet.html';
+        case 'rip_ospf':
+            return './ospf_rip.html';
+        case 'app_layer':
+            return './applicationLayer.html';
+        case 'smart_home':
+            return './smart_home.html';
+        case 'lab_manual':  // Add this line
+            return './lab_manual.html';  // Add this line
+        default:
+            return './index.html';
+    }
+}
 
         // attach click handlers to all nav links + brand home
         function initNavigation() {
