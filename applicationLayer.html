@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab 4: Application Layer Services | DHCP · DNS · HTTP · Email</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Additional styles that complement style.css - add these to your style.css if needed */
+        .user-experience-card {
+            background: linear-gradient(135deg, #f0f7ff, #ffffff);
+            border-radius: 28px;
+            border: 1px solid #cbdde9;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        }
+
+        .user-experience-card p {
+            font-size: 1.05rem;
+            margin-bottom: 1rem;
+            color: #1f2a3f;
+            line-height: 1.7;
+        }
+
+        .user-experience-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            color: #0b1c33;
+        }
+
+        .highlight-code {
+            background: #eef2ff;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-family: 'SF Mono', monospace;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #1e3a5f;
+        }
+
+        .step-image-placeholder {
+            margin: 1.5rem 0 1rem;
+            background: #f8fafd;
+            border-radius: 20px;
+            padding: 1rem;
+            text-align: center;
+            border: 1px dashed #cbd5e1;
+        }
+
+        .step-image-placeholder svg {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+        }
+
+        .fig-ref {
+            font-size: 0.85rem;
+            color: #546e7a;
+            text-align: center;
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+
+        .cli-cmd-block {
+            background: #0f1a27;
+            border-radius: 20px;
+            padding: 1.5rem;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.9rem;
+            line-height: 1.7;
+            overflow-x: auto;
+            color: #e2e8f0;
+            border-left: 4px solid #3b82f6;
+            margin: 1rem 0;
+        }
+
+        .cli-cmd-block .prompt { color: #86efac; }
+        .cli-cmd-block .comment { color: #94a3b8; }
+
+        .note-box {
+            background: #fefce8;
+            border-left: 4px solid #eab308;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            margin: 1rem 0;
+            font-size: 0.95rem;
+        }
+
+        .success-badge {
+            display: inline-block;
+            background: #1f7042;
+            color: white;
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .step-content ul, .step-content ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .step-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .device-config {
+            background: #f1f5f9;
+            padding: 1rem;
+            border-radius: 16px;
+            font-family: monospace;
+            margin: 1rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .user-experience-card p { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- ========== NAVBAR INJECTION ========== -->
+<div id="navbar-container"></div>
+<script>
+    fetch('navbar.html')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('navbar-container').innerHTML = data;
+            
+            // Re-run navbar's initialization after loading
+            if (typeof window.initNavbar === 'undefined') {
+                // Small delay to ensure DOM is ready
+                setTimeout(() => {
+                    const navScript = document.querySelector('#navbar-container script');
+                    if (navScript) {
+                        eval(navScript.textContent);
+                    }
+                }, 50);
+            }
+        })
+        .catch(error => console.error('Navbar loading error:', error));
+</script>
+<!-- ========== END NAVBAR ========== -->
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <h1>📡 Application Layer Services</h1>
+            <p>DHCP · DNS · HTTP · Email (SMTP/POP3) · Full User Experience</p>
+        </div>
+        <div class="network-badge">🌐 192.168.100.0/24 · 2 Servers · 4 Switches · 4 PCs</div>
+    </div>
+
+    <!-- Topology Image with Zoom (same as your style) -->
+    <div class="topology-section">
+        <div class="topology-header">
+            <h2>Network Topology – Servers & End Devices</h2>
+            <div class="zoom-hint"><span>🔍</span> Click image to zoom</div>
+        </div>
+        <div class="topology-image zoomable-image">
+            <img src="images/email.png" alt="Network topology diagram for Application Layer Services">
+            
+        </div>
+    </div>
+
+    <!-- Download Section -->
+    <div class="download-card">
+        <div class="download-text">
+            <h3>📄 Packet Tracer File (Complete Lab)</h3>
+            <p>Full configuration: DHCP pool, DNS records, HTTP webpage, Email users (user1/user2)</p>
+        </div>
+        <a href="#" class="download-link" download="App_Layer_Services_Lab.pkt">⬇ Download .pkt</a>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="stats-grid">
+        <div class="stat-item"><div class="stat-label">Network</div><div class="stat-number">192.168.100.0/24</div></div>
+        <div class="stat-item"><div class="stat-label">DHCP Pool</div><div class="stat-number">.50 – .59</div></div>
+        <div class="stat-item"><div class="stat-label">DNS Record</div><div class="stat-number">www.puc.com → .20</div></div>
+        <div class="stat-item"><div class="stat-label">Email Users</div><div class="stat-number">user1 / user2</div></div>
+    </div>
+
+    <!-- USER EXPERIENCE SECTION (detailed paragraph as requested) -->
+    <div class="user-experience-card">
+        <h3>👩‍💻 User Experience – What a User Actually Does</h3>
+        <p>Imagine you are sitting at <strong class="highlight-code">PC1</strong> in the computer lab. You don’t need to know anything about IP addresses, subnet masks, or server configurations. The moment you turn on your computer, the <strong class="highlight-code">DHCP server</strong> (192.168.100.10) automatically gives your PC an IP address like <strong>192.168.100.51</strong>. You see the network icon show "Connected" — no manual setup required.</p>
+        <p>To browse the internal website, you open your web browser, type <strong class="highlight-code">www.puc.com</strong> in the address bar, and press Enter. Behind the scenes, the <strong class="highlight-code">DNS server</strong> translates that friendly name into the actual IP address <strong>192.168.100.20</strong> (HTTP server). Instantly, a welcome page appears: <em>"Welcome to PUC Network – Application Layer Services Lab"</em>. You can click, refresh, or even navigate to <strong>test.html</strong> — it feels exactly like browsing the real internet, but everything stays inside your local network.</p>
+        <p>Now for email: You open the Email client on your desktop. You click <strong>Compose</strong>, type <strong class="highlight-code">user2@puc.com</strong> in the "To" field, write a quick message like "Hello from PC1!", and hit <strong>Send</strong>. Your friend at PC2 opens their email client, clicks <strong>Receive</strong>, and sees your message instantly. They can reply, and when you click Receive again, you get their reply. No complicated settings — just like Gmail or Outlook. The <strong>SMTP and POP3 services</strong> on the same server handle the delivery. This lab perfectly mirrors how real-world networks provide DHCP, DNS, web, and email services, making everything seamless for the end user.</p>
+        <p>✨ <strong>Key takeaway:</strong> Users only care about typing a web address or sending an email — all the magic of application-layer protocols happens automatically thanks to correct server configurations.</p>
+    </div>
+
+    <!-- DETAILED STEP-BY-STEP IMPLEMENTATION (exactly as requested) -->
+    <h2>📝 Step-by-Step Implementation</h2>
+    <div class="steps">
+        <!-- STEP 1: Set Up the Topology -->
+        <div class="step">
+            <div class="step-header"><span class="step-number">1</span><span class="step-title">Set Up the Topology</span></div>
+            <div class="step-content">
+                <ul>
+                    <li><strong>Open Cisco Packet Tracer</strong></li>
+                    <li><strong>Add devices to workspace:</strong>
+                        <ul><li>Click bottom toolbar → End Devices → Drag <strong>2 Server-PT</strong> devices</li>
+                        <li>Click bottom toolbar → Switches → Drag <strong>4 Switch 2960-24TT</strong></li>
+                        <li>Click bottom toolbar → End Devices → Drag <strong>4 PCs</strong> (or mix with Laptops)</li></ul>
+                    </li>
+                    <li><strong>Position them as shown in Figure 4.3 (page 21 of lab manual)</strong></li>
+                    <li><strong>Connect the devices:</strong> Use the "Automatically Choose Connection Type" cable (copper lightning bolt icon). Connect each PC to its respective switch, then connect all switches to both servers.</li>
+                </ul>
+                <div class="step-image-placeholder">
+                    <svg width="100%" height="130" viewBox="0 0 600 100" xmlns="http://www.w3.org/2000/svg"><rect width="600" height="100" fill="#eef2ff" rx="12"/><text x="300" y="55" text-anchor="middle" fill="#1e3a5f" font-size="12">🔌 PCs connected to switches → switches to servers (trunk/access)</text></svg>
+                    <div class="fig-ref">📌 Figure 4.3 reference: Topology with 4 switches, 2 servers, 4 end devices</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 2: Configure IP addresses for servers -->
+        <div class="step">
+            <div class="step-header"><span class="step-number">2</span><span class="step-title">Configure IP Addresses for the Servers</span></div>
+            <div class="step-content">
+                <p><strong>Configure DHCP + DNS Server (Server0):</strong></p>
+                <div class="device-config">Click on Server0 → Desktop → IP Configuration<br>Set: IP: 192.168.100.10 | Mask: 255.255.255.0 | Gateway: 192.168.100.1 | DNS: 192.168.100.10</div>
+                <p><strong>Configure HTTP + Email Server (Server1):</strong></p>
+                <div class="device-config">Click on Server1 → Desktop → IP Configuration<br>Set: IP: 192.168.100.20 | Mask: 255.255.255.0 | Gateway: 192.168.100.1</div>
+                <div class="step-image-placeholder">
+                    <svg width="100%" height="80" viewBox="0 0 500 60"><rect width="500" height="60" fill="#f1f5f9" rx="8"/><text x="250" y="35" text-anchor="middle" fill="#0f172a" font-size="11">Server0 IP: 192.168.100.10  |  Server1 IP: 192.168.100.20</text></svg>
+                    <div class="fig-ref">📌 Like Figure 4.4 & 4.5 (pages 21-22)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 3: Configure DHCP server -->
+        <div class="step">
+            <div class="step-header"><span class="step-number">3</span><span class="step-title">Configure DHCP Server</span></div>
+            <div class="step-content">
+                <ul><li>Click Server0 → Services → DHCP → Turn <strong>ON</strong>.</li>
+                <li>Default Gateway: <code>192.168.100.1</code></li>
+                <li>DNS Server: <code>192.168.100.10</code></li>
+                <li>Start IP Address: <code>192.168.100.50</code></li>
+                <li>Subnet Mask: <code>255.255.255.0</code></li>
+                <li>Maximum Users: <code>10</code> → Click <strong>Save</strong>.</li></ul>
+                <div class="cli-cmd-block">
+<span class="prompt">DHCP Pool:</span> 192.168.100.50 – 192.168.100.59<br>
+<span class="prompt">Gateway .1 | DNS .10</span>
+                </div>
+                <div class="fig-ref">📌 Figure 4.6 (page 22): DHCP server configuration panel</div>
+            </div>
+        </div>
+
+        <!-- STEP 4: Configure PCs via DHCP -->
+        <div class="step">
+            <div class="step-header"><span class="step-number">4</span><span class="step-title">Configure IP Address Automatically (DHCP on PCs)</span></div>
+            <div class="step-content">
+                <p>On each PC (PC0, PC1, PC2, PC3):</p>
+                <ul><li>Desktop → IP Configuration → Select <strong>DHCP</strong></li>
+                <li>Wait a few seconds: IP addresses will appear (192.168.100.50, .51, .52, .53).</li></ul>
+                <div class="cli-cmd-block">
+<span class="prompt">PC0 gets 192.168.100.50</span><br>
+<span class="prompt">PC1 gets 192.168.100.51</span><br>
+<span class="prompt">PC2 gets 192.168.100.52</span><br>
+<span class="prompt">PC3 gets 192.168.100.53</span>
+                </div>
+                <div class="fig-ref">📌 Figures 4.7–4.10 (pages 23-24): DHCP auto-configuration on PCs</div>
+            </div>
+        </div>
+
+        <!-- STEP 5: Configure DNS server -->
+        <div class="step">
+            <div class="step-header"><span class="step-number">5</span><span class="step-title">Configure DNS Server</span></div>
+            <div class="step-content">
+                <ul><li>Server0 → Services → DNS → Turn <strong>ON</strong>.</li>
+                <li>Add record: <strong>Name:</strong> <code>www.puc.com</code> → <strong>Address:</strong> <code>192.168.100.20</code> → Click <strong>Add/Save</strong>.</li>
+                <li>(Optional) Add <code>mail.puc.com</code> → 192.168.100.20 for email convenience.</li></ul>
+                <div class="cli-cmd-block">
+<span class="prompt">nslookup www.puc.com</span><br>
+Server:  [192.168.100.10]<br>
+Address: 192.168.100.20  ✅
+                </div>
+                <div class="fig-ref">📌 Figure 4.11–4.12 (pages 24-25): DNS record addition & verification</div>
+            </div>
+        </div>
+
+        <!-- STEP 6: Configure HTTP server -->
+        <div class="step">
+            <div class="step-header"><span class="step-number">6</span><span class="step-title">Configure HTTP Server & Verify</span></div>
+            <div class="step-content">
+                <ul><li>Server1 → Services → HTTP → Turn <strong>ON</strong>.</li>
+                <li>Click <strong>New File</strong>: filename <code>test.html</code> → HTML content:</li></ul>
+                <div class="cli-cmd-block">
+&lt;html&gt;&lt;body&gt;&lt;h1&gt;Welcome to PUC Network&lt;/h1&gt;&lt;p&gt;HTTP server is active!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+                </div>
+                <ul><li>Save. Also create <code>index.html</code> if desired.</li>
+                <li>Verify: From any PC browser → <code>http://192.168.100.20/test.html</code> or <code>http://www.puc.com/test.html</code> → webpage displays.</li></ul>
+                <div class="step-image-placeholder">
+                    <svg width="100%" height="90" viewBox="0 0 500 70"><rect width="500" height="70" fill="#e6f7ec" rx="12"/><text x="250" y="40" text-anchor="middle" fill="#1f7042" font-size="12">✅ HTTP server: test.html loads successfully</text></svg>
+                    <div class="fig-ref">📌 Figures 4.13–4.15 (pages 25-26): HTTP file creation & browser test</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 7: Configure Email (SMTP) server -->
+        <div class="step">
+            <div class="step-header"><span class="step-number">7</span><span class="step-title">Configure Email Server (SMTP/POP3)</span></div>
+            <div class="step-content">
+                <ul><li>Server1 → Services → EMAIL → Turn <strong>ON</strong>.</li>
+                <li>Add users: <strong>user1</strong> / password <code>password123</code> → click <strong>+</strong>.</li>
+                <li>Add <strong>user2</strong> / password <code>password123</code> → click <strong>+</strong>.</li>
+                <li>Domain (optional): <code>puc.com</code> → Save.</li></ul>
+                <div class="cli-cmd-block">
+Users created: user1, user2<br>
+SMTP/POP3 ready on 192.168.100.20
+                </div>
+                <div class="fig-ref">📌 Figure 4.16 (page 27): Adding email users on server</div>
+            </div>
+        </div>
+
+        <!-- STEP 8: Email Client configuration on PCs -->
+        <div class="step">
+            <div class="step-header"><span class="step-number">8</span><span class="step-title">Configure Email Clients (PC1 & PC2)</span></div>
+            <div class="step-content">
+                <p><strong>PC1 (user1):</strong> Desktop → Email → Configure Mail:</p>
+                <div class="device-config">Your Name: User One | Email: user1@puc.com<br>Incoming/Outgoing Server: 192.168.100.20 | Username: user1 | Password: password123 → Save</div>
+                <p><strong>PC2 (user2):</strong> Desktop → Email → Configure Mail:</p>
+                <div class="device-config">Your Name: User Two | Email: user2@puc.com<br>Incoming/Outgoing Server: 192.168.100.20 | Username: user2 | Password: password123 → Save</div>
+                <div class="fig-ref">📌 Figures 4.17–4.18 (pages 27-28): Email client credential setup</div>
+            </div>
+        </div>
+
+        <!-- STEP 9: Test Email Service -->
+        <div class="step">
+            <div class="step-header"><span class="step-number">9</span><span class="step-title">Test Email Service (Send & Receive)</span></div>
+            <div class="step-content">
+                <ul><li>On PC1: Compose email to <strong>user2@puc.com</strong>, subject "Hello", message "Testing email service". Click <strong>Send</strong>.</li>
+                <li>On PC2: Click <strong>Receive</strong> → email appears in inbox.</li>
+                <li>Reply from PC2 to user1@puc.com → PC1 clicks Receive → reply arrives.</li></ul>
+                <div class="cli-cmd-block">
+✅ Email successfully delivered! SMTP & POP3 fully operational.
+                </div>
+                <div class="step-image-placeholder">
+                    <svg width="100%" height="70" viewBox="0 0 500 50"><rect width="500" height="50" fill="#e0f2fe" rx="12"/><text x="250" y="32" text-anchor="middle" fill="#0b1c33" font-size="11">📧 user1 → user2 : email received ✅ | reply works ✅</text></svg>
+                    <div class="fig-ref">📌 Figures 4.19–4.20 (pages 28-29): Compose email and successful receive</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Verification Table -->
+    <h2>✅ Service Verification & Results</h2>
+    <div class="table-wrapper">
+        <table>
+            <thead><tr><th>Service</th><th>User Action</th><th>Expected Outcome</th><th>Status</th></tr></thead>
+            <tbody>
+                <tr><td>DHCP</td><td>Turn on PC → ipconfig</td><td>IP 192.168.100.50–.53, gateway .1</td><td class="success">✓ Success</td></tr>
+                <tr><td>DNS</td><td>nslookup www.puc.com</td><td>Returns 192.168.100.20</td><td class="success">✓ Success</td></tr>
+                <tr><td>HTTP</td><td>Browser → http://www.puc.com/test.html</td><td>Webpage displays welcome message</td><td class="success">✓ Success</td></tr>
+                <tr><td>SMTP (Send)</td><td>PC1 sends email to user2@puc.com</td><td>"Message sent" confirmation</td><td class="success">✓ Success</td></tr>
+                <tr><td>POP3 (Receive)</td><td>PC2 clicks Receive</td><td>Email from user1 appears</td><td class="success">✓ Success</td></tr>
+                <tr><td>Full Email Loop</td><td>PC2 replies → PC1 Receive</td><td>Two-way communication works</td><td class="success">✓ Success</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Additional notes -->
+    <div class="note-box">
+        💡 <strong>Insight:</strong> This lab demonstrates how DHCP, DNS, HTTP, and Email (SMTP/POP3) work together at the Application Layer. Users only see a browser or email client, while underlying protocols handle addressing, name resolution, and message delivery.
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="footer-content">
+            <div class="footer-column"><h4>Resources</h4><ul><li><a href="#">Packet Tracer File</a></li><li><a href="#">CLI Commands</a></li><li><a href="#">VLAN Design</a></li></ul></div>
+            <div class="footer-column"><h4>Documentation</h4><ul><li><a href="#">DHCP Guide</a></li><li><a href="#">DNS Setup</a></li><li><a href="#">HTTP Config</a></li></ul></div>
+            <div class="footer-column"><h4>Labs</h4><ul><li><a href="#">Static Routing</a></li><li><a href="#">OSPF</a></li><li><a href="#">NAT</a></li></ul></div>
+            <div class="footer-column"><h4>Connect</h4><ul><li><a href="#">GitHub</a></li><li><a href="#">LinkedIn</a></li><li><a href="#">Email</a></li></ul></div>
+        </div>
+        <div class="footer-bottom">
+            <div class="creator-name">Nazmul Islam Abir (43)</div>
+            <div class="footer-links"><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Contact</a></div>
+            <div class="copyright">© 2026 · Computer Networks Lab | Application Layer Services</div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Zoom Script (using your style.css class) -->
+<script>
+    document.querySelectorAll('.zoomable-image').forEach(el => {
+        el.addEventListener('click', function(e) {
+            this.classList.toggle('zoomed');
+        });
+    });
+</script>
+</body>
+</html>

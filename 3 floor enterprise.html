@@ -1,0 +1,1881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏢 Complete Enterprise Network Design - Full Implementation Guide | Cisco Packet Tracer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            color: #1a2c3e;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #0b2b44 0%, #1a4a6f 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 24px;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .badge-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .badge {
+            background: rgba(255,255,255,0.2);
+            padding: 0.4rem 0.8rem;
+            border-radius: 40px;
+            font-size: 0.8rem;
+        }
+
+        /* Navigation */
+        .nav-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+            overflow-x: auto;
+        }
+
+        .nav-btn {
+            padding: 0.7rem 1.2rem;
+            background: none;
+            border: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: all 0.2s;
+            color: #64748b;
+            white-space: nowrap;
+        }
+
+        .nav-btn:hover {
+            background: #e2e8f0;
+        }
+
+        .nav-btn.active {
+            background: #1a4a6f;
+            color: white;
+        }
+
+        /* Sections */
+        .section {
+            display: none;
+            background: white;
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #0b2b44;
+            border-left: 4px solid #1a4a6f;
+            padding-left: 1rem;
+        }
+
+        .subsection-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 1.5rem 0 1rem 0;
+            color: #2c3e58;
+        }
+
+        /* Tables */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 1rem 0;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: #f1f5f9;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        /* Code Blocks */
+        .code-block {
+            background: #0f172a;
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+
+        .code-block pre {
+            color: #e2e8f0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+        .code-header {
+            color: #94a3b8;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.5px;
+        }
+
+        /* Device Grid */
+        .device-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .device-card {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1rem;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .device-icon {
+            font-size: 2rem;
+            width: 50px;
+            text-align: center;
+        }
+
+        .device-info h4 {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .device-info p {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        /* Feature Grid */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .feature-card {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Alert Boxes */
+        .warning-box {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 1rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+        }
+
+        .success-box {
+            background: #d1fae5;
+            border-left: 4px solid #10b981;
+            padding: 1rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+        }
+
+        .info-box {
+            background: #e0f2fe;
+            border-left: 4px solid #0284c7;
+            padding: 1rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+        }
+
+        .tip-box {
+            background: #fef9e3;
+            border-left: 4px solid #eab308;
+            padding: 1rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+        }
+
+        /* Connection Table */
+        .connection-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.85rem;
+        }
+
+        .connection-table th, .connection-table td {
+            border: 1px solid #e2e8f0;
+            padding: 0.5rem;
+            text-align: left;
+        }
+
+        .connection-table th {
+            background: #f1f5f9;
+        }
+
+        /* Step List */
+        .step-list {
+            list-style: none;
+            counter-reset: step-counter;
+        }
+
+        .step-list li {
+            counter-increment: step-counter;
+            margin-bottom: 1.2rem;
+            padding-left: 2.8rem;
+            position: relative;
+        }
+
+        .step-list li::before {
+            content: counter(step-counter);
+            background: #1a4a6f;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            left: 0;
+            top: 0;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            .nav-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+            .section {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <h1>🏢 Complete Enterprise Network Design</h1>
+        <p>3-Tier Architecture | 3 Floors | Full Services (DHCP, DNS, HTTP, Email, VoIP, File Sharing, AD)</p>
+        <div class="badge-container">
+            <span class="badge">📡 3 Routers</span>
+            <span class="badge">🖧 8 Switches</span>
+            <span class="badge">🖥️ 9 Servers</span>
+            <span class="badge">💻 12 PCs</span>
+            <span class="badge">📱 3 VoIP Laptops</span>
+            <span class="badge">📶 1 Access Point</span>
+            <span class="badge">🏷️ 8 VLANs</span>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+        <button class="nav-btn active" onclick="showSection('overview')">📋 Overview</button>
+        <button class="nav-btn" onclick="showSection('devices')">🖥️ Add Devices</button>
+        <button class="nav-btn" onclick="showSection('connect')">🔌 Connect Devices</button>
+        <button class="nav-btn" onclick="showSection('vlan')">🏷️ VLAN & IP</button>
+        <button class="nav-btn" onclick="showSection('wireless')">📡 Wireless Setup</button>
+        <button class="nav-btn" onclick="showSection('routers')">🌐 Router Configs</button>
+        <button class="nav-btn" onclick="showSection('switches')">🖧 Switch Configs</button>
+        <button class="nav-btn" onclick="showSection('servers')">🖥️ Server Setup</button>
+        <button class="nav-btn" onclick="showSection('services')">⚙️ Services</button>
+        <button class="nav-btn" onclick="showSection('test')">✅ Testing</button>
+    </div>
+
+    <!-- SECTION 1: OVERVIEW -->
+    <div id="overview" class="section active">
+        <div class="section-title">📋 Network Overview</div>
+        <p>This is a <strong>complete enterprise network</strong> designed for a 3-floor office building. Each floor has 4 wired PCs and 1 wireless VoIP laptop. The network includes full redundancy, security zones, and all essential business services.</p>
+
+        <div class="feature-grid">
+            <div class="feature-card"><div class="feature-icon">⚡</div><div class="feature-title">High Availability</div><p>HSRP gateway redundancy<br>Dual uplinks to distribution<br>Automatic failover</p></div>
+            <div class="feature-card"><div class="feature-icon">🔒</div><div class="feature-title">Security Zones</div><p>DMZ for public servers<br>Firewall with ACLs<br>NAT for internet access</p></div>
+            <div class="feature-card"><div class="feature-icon">📡</div><div class="feature-title">Dynamic Routing</div><p>OSPF Area 0<br>Core router connects distribution<br>Automatic route updates</p></div>
+            <div class="feature-card"><div class="feature-icon">📱</div><div class="feature-title">Wireless VoIP</div><p>WiFi Access Point<br>Laptops connect wirelessly<br>Separate VLAN 60 for voice</p></div>
+        </div>
+
+        <div class="subsection-title">📊 Network Statistics</div>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>Category</th><th>Details</th></tr></thead>
+                <tbody>
+                    <tr><td>Total Devices</td><td>3 Routers + 8 Switches + 9 Servers + 12 PCs + 3 Laptops + 1 AP = 36 Devices</td></tr>
+                    <tr><td>VLANs</td><td>8 VLANs (10,20,30,40,50,60,80,99)</td></tr>
+                    <tr><td>Subnets</td><td>8 Data VLANs + 4 WAN Links</td></tr>
+                    <tr><td>Redundancy</td><td>HSRP, Dual Uplinks, STP Root Bridge</td></tr>
+                    <tr><td>Services</td><td>DHCP, DNS, HTTP, Email (SMTP/POP3), VoIP, File Sharing (SMB), Active Directory</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="info-box">
+            💡 <strong>For Beginners:</strong> This guide walks you through EVERY click. Follow the tabs in order (1→2→3→...). If you get stuck, double-check the previous step.
+        </div>
+    </div>
+
+    <!-- SECTION 2: ADD DEVICES -->
+    <div id="devices" class="section">
+        <div class="section-title">🖥️ Step 1: Add All Devices to Workspace</div>
+        
+        <div class="subsection-title">2.1 Open Cisco Packet Tracer</div>
+        <ul><li>Launch Packet Tracer</li><li>Click <strong>File → New</strong> (or press Ctrl+N)</li></ul>
+
+        <div class="subsection-title">2.2 Add Routers (3 total)</div>
+        <div class="device-grid">
+            <div class="device-card"><div class="device-icon">🌐</div><div class="device-info"><h4>ISP-Router</h4><p>Router 2911 | Simulates Internet</p></div></div>
+            <div class="device-card"><div class="device-icon">🔥</div><div class="device-info"><h4>Firewall</h4><p>Router 2911 | 3-Zone Security</p></div></div>
+            <div class="device-card"><div class="device-icon">⚡</div><div class="device-info"><h4>Core-Router</h4><p>Router 2911 | OSPF Hub</p></div></div>
+        </div>
+        <p><strong>Steps:</strong> Click <strong>Routers</strong> icon → Find <strong>2911</strong> → Drag 3 routers → Name them: <code>ISP-Router</code>, <code>Firewall</code>, <code>Core-Router</code></p>
+
+        <div class="subsection-title">2.3 Add Layer 3 Switches (2 total)</div>
+        <div class="device-grid">
+            <div class="device-card"><div class="device-icon">🔄</div><div class="device-info"><h4>Dist-SW1 (Active)</h4><p>3560-24PS | HSRP Priority 110</p></div></div>
+            <div class="device-card"><div class="device-icon">🔄</div><div class="device-info"><h4>Dist-SW2 (Standby)</h4><p>3560-24PS | HSRP Priority 90</p></div></div>
+        </div>
+        <p><strong>Steps:</strong> Click <strong>Switches</strong> icon → Find <strong>3560-24PS</strong> → Drag 2 switches → Name: <code>Dist-SW1</code>, <code>Dist-SW2</code></p>
+
+        <div class="subsection-title">2.4 Add Layer 2 Switches (8 total)</div>
+        <div class="device-grid">
+            <div class="device-card"><div class="device-icon">📡</div><div class="device-info"><h4>Access-SW1 (Floor1)</h4><p>2960-24TT | VLAN 10</p></div></div>
+            <div class="device-card"><div class="device-icon">📡</div><div class="device-info"><h4>Access-SW2 (Floor2)</h4><p>2960-24TT | VLAN 20</p></div></div>
+            <div class="device-card"><div class="device-icon">📡</div><div class="device-info"><h4>Access-SW3 (Floor3)</h4><p>2960-24TT | VLAN 30</p></div></div>
+            <div class="device-card"><div class="device-icon">🖧</div><div class="device-info"><h4>Server-SW</h4><p>2960-24TT | VLAN 40</p></div></div>
+            <div class="device-card"><div class="device-icon">📞</div><div class="device-info"><h4>VoIP-SW</h4><p>2960-24TT | VLAN 60</p></div></div>
+            <div class="device-card"><div class="device-icon">🌍</div><div class="device-info"><h4>DMZ-SW</h4><p>2960-24TT | VLAN 50</p></div></div>
+            <div class="device-card"><div class="device-icon">📶</div><div class="device-info"><h4>AP-SW</h4><p>2960-24TT | Access Point Switch</p></div></div>
+            <div class="device-card"><div class="device-icon">🖥️</div><div class="device-info"><h4>Mgmt-SW</h4><p>2960-24TT | Management VLAN 80</p></div></div>
+        </div>
+        <p><strong>Steps:</strong> Click <strong>Switches</strong> icon → Find <strong>2960-24TT</strong> → Drag 8 switches → Name as above</p>
+
+        <div class="subsection-title">2.5 Add Access Point (1 total)</div>
+        <div class="device-grid">
+            <div class="device-card"><div class="device-icon">📶</div><div class="device-info"><h4>Access-Point</h4><p>WRT300N | WiFi for VoIP Laptops</p></div></div>
+        </div>
+        <p><strong>Steps:</strong> Click <strong>Wireless Devices</strong> icon → Find <strong>WRT300N</strong> → Drag 1 → Name: <code>Access-Point</code></p>
+
+        <div class="subsection-title">2.6 Add Servers (9 total) - COMPLETE LIST</div>
+        <div class="device-grid">
+            <div class="device-card"><div class="device-icon">🏛️</div><div class="device-info"><h4>AD-Server</h4><p>192.168.40.10 | Active Directory / LDAP</p></div></div>
+            <div class="device-card"><div class="device-icon">📡</div><div class="device-info"><h4>DNS-DHCP-Server</h4><p>192.168.40.11 | DNS + DHCP Services</p></div></div>
+            <div class="device-card"><div class="device-icon">📁</div><div class="device-info"><h4>File-Server</h4><p>192.168.40.12 | SMB/NFS File Sharing</p></div></div>
+            <div class="device-card"><div class="device-icon">💾</div><div class="device-info"><h4>Backup-Server</h4><p>192.168.40.13 | Data Backup</p></div></div>
+            <div class="device-card"><div class="device-icon">🌐</div><div class="device-info"><h4>Web-Server</h4><p>172.16.50.11 | Public HTTP/HTTPS</p></div></div>
+            <div class="device-card"><div class="device-icon">📧</div><div class="device-info"><h4>Mail-Server</h4><p>172.16.50.10 | SMTP/IMAP/POP3</p></div></div>
+            <div class="device-card"><div class="device-icon">🔍</div><div class="device-info"><h4>Public-DNS</h4><p>172.16.50.12 | External DNS</p></div></div>
+            <div class="device-card"><div class="device-icon">🔄</div><div class="device-info"><h4>Proxy-Server</h4><p>172.16.50.13 | Squid Proxy</p></div></div>
+            <div class="device-card"><div class="device-icon">📞</div><div class="device-info"><h4>SIP-PBX</h4><p>192.168.60.10 | VoIP Call Control</p></div></div>
+        </div>
+        <p><strong>Steps:</strong> Click <strong>End Devices</strong> icon → Find <strong>Server-PT</strong> → Drag 9 servers → Name as above</p>
+
+        <div class="subsection-title">2.7 Add PCs (12 total - 4 per floor)</div>
+        <div class="device-grid">
+            <div class="device-card"><div class="device-icon">💻</div><div class="device-info"><h4>Floor 1 PCs</h4><p>PC-F1-A, PC-F1-B, PC-F1-C, PC-F1-D</p></div></div>
+            <div class="device-card"><div class="device-icon">💻</div><div class="device-info"><h4>Floor 2 PCs</h4><p>PC-F2-A, PC-F2-B, PC-F2-C, PC-F2-D</p></div></div>
+            <div class="device-card"><div class="device-icon">💻</div><div class="device-info"><h4>Floor 3 PCs</h4><p>PC-F3-A, PC-F3-B, PC-F3-C, PC-F3-D</p></div></div>
+        </div>
+        <p><strong>Steps:</strong> Click <strong>End Devices</strong> icon → Find <strong>PC-PT</strong> → Drag 12 PCs → Name accordingly</p>
+
+        <div class="subsection-title">2.8 Add VoIP Laptops (3 total - 1 per floor)</div>
+        <div class="device-grid">
+            <div class="device-card"><div class="device-icon">📱</div><div class="device-info"><h4>VoIP-Laptop-F1</h4><p>Floor 1 Wireless VoIP</p></div></div>
+            <div class="device-card"><div class="device-icon">📱</div><div class="device-info"><h4>VoIP-Laptop-F2</h4><p>Floor 2 Wireless VoIP</p></div></div>
+            <div class="device-card"><div class="device-icon">📱</div><div class="device-info"><h4>VoIP-Laptop-F3</h4><p>Floor 3 Wireless VoIP</p></div></div>
+        </div>
+        <p><strong>Steps:</strong> Click <strong>End Devices</strong> icon → Find <strong>Laptop-PT</strong> → Drag 3 laptops → Name as above</p>
+
+        <div class="tip-box">
+            💡 <strong>Total Devices Count:</strong> 3 Routers + 8 Switches + 9 Servers + 12 PCs + 3 Laptops + 1 AP = <strong>36 Devices</strong>
+        </div>
+    </div>
+
+    <!-- SECTION 3: CONNECT DEVICES -->
+    <div id="connect" class="section">
+        <div class="section-title">🔌 Step 2: Connect All Devices</div>
+        <div class="info-box">📌 <strong>Connection Method:</strong> Click <strong>Connections</strong> (lightning bolt) → Select <strong>Automatically Choose Connection Type</strong> → Click first device → Click second device</div>
+
+        <div class="subsection-title">3.1 Router Connections</div>
+        <div class="table-wrapper">
+            <table class="connection-table">
+                <thead><tr><th>From</th><th>Port</th><th>To</th><th>Port</th></tr></thead>
+                <tbody>
+                    <tr><td>ISP-Router</td><td>Gig0/1</td><td>Firewall</td><td>Gig0/1</td></tr>
+                    <tr><td>Firewall</td><td>Gig0/2</td><td>Core-Router</td><td>Gig0/1</td></tr>
+                    <tr><td>Firewall</td><td>Gig0/0</td><td>DMZ-SW</td><td>Fa0/24</td></tr>
+                    <tr><td>Core-Router</td><td>Gig0/2</td><td>Dist-SW1</td><td>Gig0/1</td></tr>
+                    <tr><td>Core-Router</td><td>Gig0/0</td><td>Dist-SW2</td><td>Gig0/1</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="subsection-title">3.2 Distribution Switch Connections</div>
+        <div class="table-wrapper">
+            <table class="connection-table">
+                <thead><tr><th>From</th><th>Port</th><th>To</th><th>Port</th></tr></thead>
+                <tbody>
+                    <tr><td>Dist-SW1</td><td>Gig0/2</td><td>Dist-SW2</td><td>Gig0/2</td></tr>
+                    <tr><td>Dist-SW1</td><td>Fa0/1</td><td>Access-SW1</td><td>Fa0/1</td></tr>
+                    <tr><td>Dist-SW1</td><td>Fa0/2</td><td>Access-SW2</td><td>Fa0/1</td></tr>
+                    <tr><td>Dist-SW1</td><td>Fa0/3</td><td>Access-SW3</td><td>Fa0/1</td></tr>
+                    <tr><td>Dist-SW1</td><td>Fa0/4</td><td>Server-SW</td><td>Fa0/1</td></tr>
+                    <tr><td>Dist-SW1</td><td>Fa0/5</td><td>VoIP-SW</td><td>Fa0/1</td></tr>
+                    <tr><td>Dist-SW1</td><td>Fa0/6</td><td>AP-SW</td><td>Fa0/1</td></tr>
+                    <tr><td>Dist-SW1</td><td>Fa0/7</td><td>Mgmt-SW</td><td>Fa0/1</td></tr>
+                    <tr><td>Dist-SW2</td><td>Fa0/1</td><td>Access-SW1</td><td>Fa0/2</td></tr>
+                    <tr><td>Dist-SW2</td><td>Fa0/2</td><td>Access-SW2</td><td>Fa0/2</td></tr>
+                    <tr><td>Dist-SW2</td><td>Fa0/3</td><td>Access-SW3</td><td>Fa0/2</td></tr>
+                    <tr><td>Dist-SW2</td><td>Fa0/4</td><td>Server-SW</td><td>Fa0/2</td></tr>
+                    <tr><td>Dist-SW2</td><td>Fa0/5</td><td>VoIP-SW</td><td>Fa0/2</td></tr>
+                    <tr><td>Dist-SW2</td><td>Fa0/6</td><td>AP-SW</td><td>Fa0/2</td></tr>
+                    <tr><td>Dist-SW2</td><td>Fa0/7</td><td>Mgmt-SW</td><td>Fa0/2</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="subsection-title">3.3 Floor 1 Connections (Access-SW1)</div>
+        <div class="table-wrapper">
+            <table class="connection-table">
+                <thead><tr><th>Port</th><th>Connected To</th><th>VLAN</th></tr></thead>
+                <tbody>
+                    <tr><td>Fa0/3</td><td>PC-F1-A</td><td>10</td></tr>
+                    <tr><td>Fa0/4</td><td>PC-F1-B</td><td>10</td></tr>
+                    <tr><td>Fa0/5</td><td>PC-F1-C</td><td>10</td></tr>
+                    <tr><td>Fa0/6</td><td>PC-F1-D</td><td>10</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="subsection-title">3.4 Floor 2 Connections (Access-SW2)</div>
+        <div class="table-wrapper">
+            <table class="connection-table">
+                <thead><tr><th>Port</th><th>Connected To</th><th>VLAN</th></tr></thead>
+                <tbody>
+                    <tr><td>Fa0/3</td><td>PC-F2-A</td><td>20</td></tr>
+                    <tr><td>Fa0/4</td><td>PC-F2-B</td><td>20</td></tr>
+                    <tr><td>Fa0/5</td><td>PC-F2-C</td><td>20</td></tr>
+                    <tr><td>Fa0/6</td><td>PC-F2-D</td><td>20</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="subsection-title">3.5 Floor 3 Connections (Access-SW3)</div>
+        <div class="table-wrapper">
+            <table class="connection-table">
+                <thead><tr><th>Port</th><th>Connected To</th><th>VLAN</th></tr></thead>
+                <tbody>
+                    <tr><td>Fa0/3</td><td>PC-F3-A</td><td>30</td></tr>
+                    <tr><td>Fa0/4</td><td>PC-F3-B</td><td>30</td></tr>
+                    <tr><td>Fa0/5</td><td>PC-F3-C</td><td>30</td></tr>
+                    <tr><td>Fa0/6</td><td>PC-F3-D</td><td>30</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="subsection-title">3.6 Server Switch Connections (Server-SW)</div>
+        <div class="table-wrapper">
+            <table class="connection-table">
+                <thead><tr><th>Port</th><th>Connected To</th><th>IP Address</th></tr></thead>
+                <tbody>
+                    <tr><td>Fa0/3</td><td>AD-Server</td><td>192.168.40.10</td></tr>
+                    <tr><td>Fa0/4</td><td>DNS-DHCP-Server</td><td>192.168.40.11</td></tr>
+                    <tr><td>Fa0/5</td><td>File-Server</td><td>192.168.40.12</td></tr>
+                    <tr><td>Fa0/6</td><td>Backup-Server</td><td>192.168.40.13</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="subsection-title">3.7 VoIP Switch Connections (VoIP-SW)</div>
+        <div class="table-wrapper">
+            <table class="connection-table">
+                <thead><tr><th>Port</th><th>Connected To</th><th>Purpose</th></tr></thead>
+                <tbody>
+                    <tr><td>Fa0/3</td><td>SIP-PBX Server</td><td>VoIP Call Control (192.168.60.10)</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="subsection-title">3.8 AP Switch Connections (AP-SW)</div>
+        <div class="table-wrapper">
+            <table class="connection-table">
+                <thead><tr><th>Port</th><th>Connected To</th><th>Purpose</th></tr></thead>
+                <tbody>
+                    <tr><td>Fa0/24</td><td>Access-Point (Ethernet port)</td><td>Wireless Access Point</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="subsection-title">3.9 DMZ Switch Connections (DMZ-SW)</div>
+        <div class="table-wrapper">
+            <table class="connection-table">
+                <thead><tr><th>Port</th><th>Connected To</th><th>IP Address</th></tr></thead>
+                <tbody>
+                    <tr><td>Fa0/3</td><td>Web-Server</td><td>172.16.50.11</td></tr>
+                    <tr><td>Fa0/4</td><td>Mail-Server</td><td>172.16.50.10</td></tr>
+                    <tr><td>Fa0/5</td><td>Public-DNS</td><td>172.16.50.12</td></tr>
+                    <tr><td>Fa0/6</td><td>Proxy-Server</td><td>172.16.50.13</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="success-box">
+            ✅ After all connections, you should see green triangles on all connected devices!
+        </div>
+    </div>
+
+    <!-- SECTION 4: VLAN & IP ADDRESSING -->
+    <div id="vlan" class="section">
+        <div class="section-title">🏷️ Step 3: VLAN & IP Addressing Scheme</div>
+
+        <div class="subsection-title">3.1 Complete VLAN Table</div>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>VLAN</th><th>Name</th><th>Subnet</th><th>Gateway (HSRP)</th><th>Usable IPs</th><th>Purpose</th> </thead>
+                <tbody>
+                    <tr><td>10</td><td>Floor1-Data</td><td>192.168.10.0/24</td><td>192.168.10.1</td><td>.2-.254</td><td>Floor 1 Wired PCs</td></tr>
+                    <tr><td>20</td><td>Floor2-Data</td><td>192.168.20.0/24</td><td>192.168.20.1</td><td>.2-.254</td><td>Floor 2 Wired PCs</td></tr>
+                    <tr><td>30</td><td>Floor3-Data</td><td>192.168.30.0/24</td><td>192.168.30.1</td><td>.2-.254</td><td>Floor 3 Wired PCs</td></tr>
+                    <tr><td>40</td><td>Server-Farm</td><td>192.168.40.0/24</td><td>192.168.40.1</td><td>.2-.254</td><td>Internal Servers</td></tr>
+                    <tr><td>50</td><td>DMZ</td><td>172.16.50.0/24</td><td>172.16.50.1</td><td>.2-.254</td><td>Public Servers</td></tr>
+                    <tr><td>60</td><td>VoIP</td><td>192.168.60.0/24</td><td>192.168.60.1</td><td>.2-.254</td><td>Wireless VoIP Laptops</td></tr>
+                    <tr><td>80</td><td>Management</td><td>192.168.80.0/24</td><td>192.168.80.1</td><td>.2-.254</td><td>Network Management</td></tr>
+                    <tr><td>99</td><td>Native</td><td>192.168.99.0/24</td><td>192.168.99.1</td><td>.2-.254</td><td>Native VLAN (Trunks)</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="subsection-title">3.2 WAN / Link Networks</div>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>Link</th><th>Network</th><th>IPs</th></tr></thead>
+                <tbody>
+                    <tr><td>ISP ↔ Firewall</td><td>203.0.113.0/30</td><td>203.0.113.1 (ISP), 203.0.113.2 (Firewall)</td></tr>
+                    <tr><td>Firewall ↔ Core</td><td>10.0.0.0/30</td><td>10.0.0.1 (Firewall), 10.0.0.2 (Core)</td></tr>
+                    <tr><td>Core ↔ Dist-SW1</td><td>10.1.0.0/30</td><td>10.1.0.1 (Core), 10.1.0.2 (Dist-SW1)</td></tr>
+                    <tr><td>Core ↔ Dist-SW2</td><td>10.1.0.4/30</td><td>10.1.0.5 (Core), 10.1.0.6 (Dist-SW2)</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="subsection-title">3.3 Complete Device IP Assignments</div>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>Device</th><th>VLAN</th><th>IP Address</th><th>Type</th></tr></thead>
+                <tbody>
+                    <tr><td>Dist-SW1</td><td>10,20,30,40,60,80</td><td>.2 for each VLAN</td><td>HSRP Active (Priority 110)</td></tr>
+                    <tr><td>Dist-SW2</td><td>10,20,30,40,60,80</td><td>.3 for each VLAN</td><td>HSRP Standby (Priority 90)</td></tr>
+                    <tr><td>AD-Server</td><td>40</td><td>192.168.40.10</td><td>Active Directory / LDAP</td></tr>
+                    <tr><td>DNS-DHCP-Server</td><td>40</td><td>192.168.40.11</td><td>DNS + DHCP Services</td></tr>
+                    <tr><td>File-Server</td><td>40</td><td>192.168.40.12</td><td>SMB/NFS File Sharing</td></tr>
+                    <tr><td>Backup-Server</td><td>40</td><td>192.168.40.13</td><td>Data Backup</td></tr>
+                    <tr><td>Web-Server</td><td>50</td><td>172.16.50.11</td><td>Public HTTP/HTTPS</td></tr>
+                    <tr><td>Mail-Server</td><td>50</td><td>172.16.50.10</td><td>SMTP/IMAP/POP3</td></tr>
+                    <tr><td>Public-DNS</td><td>50</td><td>172.16.50.12</td><td>External DNS</td></tr>
+                    <tr><td>Proxy-Server</td><td>50</td><td>172.16.50.13</td><td>Squid Proxy</td></tr>
+                    <tr><td>SIP-PBX</td><td>60</td><td>192.168.60.10</td><td>VoIP Call Control</td></tr>
+                    <tr><td>Access-Point</td><td>60</td><td>192.168.60.2</td><td>WiFi Access Point</td></tr>
+                    <tr><td>Access-SW1</td><td>80</td><td>192.168.80.11</td><td>Management</td></tr>
+                    <tr><td>Access-SW2</td><td>80</td><td>192.168.80.12</td><td>Management</td></tr>
+                    <tr><td>Access-SW3</td><td>80</td><td>192.168.80.13</td><td>Management</td></tr>
+                    <tr><td>VoIP-SW</td><td>80</td><td>192.168.80.14</td><td>Management</td></tr>
+                    <tr><td>AP-SW</td><td>80</td><td>192.168.80.15</td><td>Management</td></tr>
+                    <tr><td>Server-SW</td><td>80</td><td>192.168.80.20</td><td>Management</td></tr>
+                    <tr><td>Mgmt-SW</td><td>80</td><td>192.168.80.30</td><td>Management</td></tr>
+                    <tr><td>DMZ-SW</td><td>80</td><td>192.168.80.50</td><td>Management</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="subsection-title">3.4 DHCP Scopes (On DNS-DHCP-Server)</div>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>Scope</th><th>Network</th><th>Start IP</th><th>End IP</th><th>Gateway</th><th>DNS</th></tr></thead>
+                <tbody>
+                    <tr><td>Floor1</td><td>192.168.10.0/24</td><td>192.168.10.50</td><td>192.168.10.200</td><td>192.168.10.1</td><td>192.168.40.11</td></tr>
+                    <tr><td>Floor2</td><td>192.168.20.0/24</td><td>192.168.20.50</td><td>192.168.20.200</td><td>192.168.20.1</td><td>192.168.40.11</td></tr>
+                    <tr><td>Floor3</td><td>192.168.30.0/24</td><td>192.168.30.50</td><td>192.168.30.200</td><td>192.168.30.1</td><td>192.168.40.11</td></tr>
+                    <tr><td>VoIP</td><td>192.168.60.0/24</td><td>192.168.60.50</td><td>192.168.60.100</td><td>192.168.60.1</td><td>192.168.40.11</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="subsection-title">3.5 DNS Records</div>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>Domain Name</th><th>IP Address</th><th>Type</th><th>Server</th></tr></thead>
+                <tbody>
+                    <tr><td>ad.company.com</td><td>192.168.40.10</td><td>A</td><td>Internal DNS (192.168.40.11)</td></tr>
+                    <tr><td>dhcp.company.com</td><td>192.168.40.11</td><td>A</td><td>Internal DNS</td></tr>
+                    <tr><td>files.company.com</td><td>192.168.40.12</td><td>A</td><td>Internal DNS</td></tr>
+                    <tr><td>intranet.company.com</td><td>192.168.40.12</td><td>A</td><td>Internal DNS</td></tr>
+                    <tr><td>www.company.com</td><td>172.16.50.11</td><td>A</td><td>Public DNS (172.16.50.12)</td></tr>
+                    <tr><td>mail.company.com</td><td>172.16.50.10</td><td>A</td><td>Public DNS</td></tr>
+                    <tr><td>dns.company.com</td><td>172.16.50.12</td><td>A</td><td>Public DNS</td></tr>
+                    <tr><td>proxy.company.com</td><td>172.16.50.13</td><td>A</td><td>Public DNS</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- SECTION 5: WIRELESS SETUP -->
+    <div id="wireless" class="section">
+        <div class="section-title">📡 Step 4: Wireless Setup (VoIP Laptops)</div>
+        
+        <div class="subsection-title">4.1 Add WiFi Module to Laptops</div>
+        <ul class="step-list">
+            <li>Double-click <strong>VoIP-Laptop-F1</strong></li>
+            <li>Go to <strong>Physical</strong> tab</li>
+            <li>Turn OFF the laptop (click the power button icon)</li>
+            <li>From the left side, find <strong>WPC300N</strong> (Wireless module)</li>
+            <li>Drag it to the empty slot on the laptop (usually the left side)</li>
+            <li>Turn ON the laptop</li>
+            <li>Repeat for <strong>VoIP-Laptop-F2</strong> and <strong>VoIP-Laptop-F3</strong></li>
+        </ul>
+
+        <div class="subsection-title">4.2 Configure Access Point</div>
+        <ul class="step-list">
+            <li>Double-click <strong>Access-Point</strong></li>
+            <li>Go to <strong>GUI</strong> tab</li>
+            <li><strong>IP Configuration:</strong> Set Static IP: <code>192.168.60.2</code>, Subnet: <code>255.255.255.0</code>, Gateway: <code>192.168.60.1</code>, DNS: <code>192.168.40.11</code></li>
+            <li><strong>Wireless → Basic Settings:</strong> Network Mode: Mixed, SSID: <code>Company-VoIP</code>, Channel: 6</li>
+            <li><strong>Wireless Security:</strong> Security Mode: WPA2 Personal, Passphrase: <code>voip123</code></li>
+            <li>Click <strong>Save Settings</strong></li>
+        </ul>
+
+        <div class="subsection-title">4.3 Connect Laptops to WiFi</div>
+        <ul class="step-list">
+            <li>Double-click <strong>VoIP-Laptop-F1</strong></li>
+            <li><strong>Desktop</strong> → <strong>PC Wireless</strong></li>
+            <li>Click <strong>Connect</strong> tab</li>
+            <li>Select <strong>Company-VoIP</strong> from the list</li>
+            <li>Enter password: <code>voip123</code></li>
+            <li>Click <strong>Connect</strong></li>
+            <li>Open <strong>Command Prompt</strong> → type <code>ipconfig</code> → Verify IP is 192.168.60.x</li>
+            <li>Repeat for VoIP-Laptop-F2 and VoIP-Laptop-F3</li>
+        </ul>
+
+        <div class="warning-box">
+            ⚠️ <strong>Important:</strong> Make sure AP-SW port Fa0/24 is configured as VLAN 60 access port! This is covered in the Switch Configurations section.
+        </div>
+    </div>
+
+    <!-- SECTION 6: ROUTER CONFIGURATIONS -->
+    <div id="routers" class="section">
+        <div class="section-title">🌐 Step 5: Router Configurations</div>
+        
+        <div class="subsection-title">5.1 ISP-Router Configuration</div>
+        <div class="code-block">
+            <div class="code-header">ISP-Router (2911)</div>
+            <pre>enable
+configure terminal
+hostname ISP-Router
+
+interface Loopback0
+ ip address 8.8.8.8 255.255.255.255
+ no shutdown
+
+interface Loopback1
+ ip address 1.1.1.1 255.255.255.255
+ no shutdown
+
+interface Loopback2
+ ip address 4.2.2.2 255.255.255.255
+ no shutdown
+
+interface GigabitEthernet0/1
+ ip address 203.0.113.1 255.255.255.252
+ no shutdown
+
+ip route 0.0.0.0 0.0.0.0 203.0.113.2
+
+end
+copy running-config startup-config</pre>
+        </div>
+
+        <div class="subsection-title">5.2 Firewall Configuration (Router as Firewall)</div>
+        <div class="code-block">
+            <div class="code-header">Firewall (2911) - 3-Zone Security</div>
+            <pre>enable
+configure terminal
+hostname Firewall
+
+! === OUTSIDE ZONE (Internet) ===
+interface GigabitEthernet0/1
+ description OUTSIDE-to-ISP
+ ip address 203.0.113.2 255.255.255.252
+ ip nat outside
+ no shutdown
+
+! === DMZ ZONE (Public Servers) ===
+interface GigabitEthernet0/0
+ description DMZ-Public-Servers
+ ip address 172.16.50.1 255.255.255.0
+ ip nat inside
+ no shutdown
+
+! === INSIDE ZONE (Corporate Network) ===
+interface GigabitEthernet0/2
+ description INSIDE-to-Core-Router
+ ip address 10.0.0.1 255.255.255.252
+ ip nat inside
+ no shutdown
+
+! === ACL for OUTSIDE (Internet) ===
+ip access-list extended OUTSIDE-IN
+ remark Allow established connections
+ permit tcp any any established
+ permit icmp any any echo-reply
+ remark Allow inbound SMTP to Mail Server
+ permit tcp any host 203.0.113.10 eq 25
+ remark Allow inbound HTTP/HTTPS to Web Server
+ permit tcp any host 203.0.113.11 eq 80
+ permit tcp any host 203.0.113.11 eq 443
+ remark Allow inbound DNS queries
+ permit udp any host 203.0.113.12 eq 53
+ deny ip any any log
+
+! === ACL for DMZ ===
+ip access-list extended DMZ-IN
+ permit tcp 172.16.50.0 0.0.0.255 any eq 25
+ permit tcp 172.16.50.0 0.0.0.255 any eq 80
+ permit tcp 172.16.50.0 0.0.0.255 any eq 443
+ permit udp 172.16.50.0 0.0.0.255 any eq 53
+ deny   ip 172.16.50.0 0.0.0.255 192.168.0.0 0.0.255.255 log
+ deny   ip 172.16.50.0 0.0.0.255 10.0.0.0 0.255.255.255 log
+ permit ip 172.16.50.0 0.0.0.255 any
+
+! === NAT Configuration ===
+ip access-list standard NAT-INTERNAL
+ permit 192.168.0.0 0.0.255.255
+ permit 10.0.0.0 0.0.0.3
+
+ip nat inside source list NAT-INTERNAL interface GigabitEthernet0/1 overload
+
+! Static NAT for DMZ servers
+ip nat inside source static 172.16.50.10 203.0.113.10
+ip nat inside source static 172.16.50.11 203.0.113.11
+ip nat inside source static 172.16.50.12 203.0.113.12
+
+! === Routing ===
+ip route 0.0.0.0 0.0.0.0 203.0.113.1
+ip route 192.168.0.0 255.255.0.0 10.0.0.2
+ip route 10.1.0.0 255.255.255.0 10.0.0.2
+
+! Apply ACL to interface
+interface GigabitEthernet0/1
+ ip access-group OUTSIDE-IN in
+
+interface GigabitEthernet0/0
+ ip access-group DMZ-IN in
+
+end
+copy running-config startup-config</pre>
+        </div>
+
+        <div class="subsection-title">5.3 Core-Router Configuration</div>
+        <div class="code-block">
+            <div class="code-header">Core-Router (2911) - OSPF Hub</div>
+            <pre>enable
+configure terminal
+hostname Core-Router
+
+! === OSPF Routing ===
+router ospf 1
+ router-id 1.1.1.1
+ network 10.0.0.0 0.0.0.3 area 0
+ network 10.1.0.0 0.0.0.3 area 0
+ network 10.1.0.4 0.0.0.3 area 0
+ default-information originate always
+
+! === Interfaces ===
+interface GigabitEthernet0/1
+ description Uplink-to-Firewall
+ ip address 10.0.0.2 255.255.255.252
+ ip ospf network point-to-point
+ no shutdown
+
+interface GigabitEthernet0/2
+ description Downlink-to-Dist-SW1
+ ip address 10.1.0.1 255.255.255.252
+ ip ospf network point-to-point
+ no shutdown
+
+interface GigabitEthernet0/0
+ description Downlink-to-Dist-SW2
+ ip address 10.1.0.5 255.255.255.252
+ ip ospf network point-to-point
+ no shutdown
+
+! === Default Route ===
+ip route 0.0.0.0 0.0.0.0 10.0.0.1
+
+end
+copy running-config startup-config</pre>
+        </div>
+    </div>
+
+    <!-- SECTION 7: SWITCH CONFIGURATIONS -->
+    <div id="switches" class="section">
+        <div class="section-title">🖧 Step 6: Switch Configurations</div>
+        
+        <div class="subsection-title">6.1 Dist-SW1 (Active - HSRP Priority 110)</div>
+        <div class="code-block">
+            <div class="code-header">Dist-SW1 (3560-24PS) - Active Gateway</div>
+            <pre>enable
+configure terminal
+hostname Dist-SW1
+ip routing
+
+! === VLAN Configuration ===
+vlan 10
+ name Floor1-Data
+vlan 20
+ name Floor2-Data
+vlan 30
+ name Floor3-Data
+vlan 40
+ name Server-Farm
+vlan 50
+ name DMZ
+vlan 60
+ name VoIP
+vlan 80
+ name Management
+vlan 99
+ name Native
+
+! === Uplink to Core Router ===
+interface GigabitEthernet0/1
+ description Uplink-to-Core-Router
+ no switchport
+ ip address 10.1.0.2 255.255.255.252
+ ip ospf network point-to-point
+ no shutdown
+
+! === Peer Link to Dist-SW2 ===
+interface GigabitEthernet0/2
+ description Peer-Link-to-Dist-SW2
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan all
+ no shutdown
+
+! === Trunks to Access Switches ===
+interface FastEthernet0/1
+ description Trunk-to-Access-SW1
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 10,60,80,99
+ no shutdown
+
+interface FastEthernet0/2
+ description Trunk-to-Access-SW2
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 20,60,80,99
+ no shutdown
+
+interface FastEthernet0/3
+ description Trunk-to-Access-SW3
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 30,60,80,99
+ no shutdown
+
+interface FastEthernet0/4
+ description Trunk-to-Server-SW
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 40,80,99
+ no shutdown
+
+interface FastEthernet0/5
+ description Trunk-to-VoIP-SW
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 60,80,99
+ no shutdown
+
+interface FastEthernet0/6
+ description Trunk-to-AP-SW
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 60,80,99
+ no shutdown
+
+interface FastEthernet0/7
+ description Trunk-to-DMZ-SW
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 50,80,99
+ no shutdown
+
+interface FastEthernet0/8
+ description Trunk-to-Mgmt-SW
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 80,99
+ no shutdown
+
+! === SVIs with HSRP (ACTIVE - Priority 110) ===
+interface Vlan10
+ ip address 192.168.10.2 255.255.255.0
+ standby 10 ip 192.168.10.1
+ standby 10 priority 110
+ standby 10 preempt
+ no shutdown
+
+interface Vlan20
+ ip address 192.168.20.2 255.255.255.0
+ standby 20 ip 192.168.20.1
+ standby 20 priority 110
+ standby 20 preempt
+ no shutdown
+
+interface Vlan30
+ ip address 192.168.30.2 255.255.255.0
+ standby 30 ip 192.168.30.1
+ standby 30 priority 110
+ standby 30 preempt
+ no shutdown
+
+interface Vlan40
+ ip address 192.168.40.2 255.255.255.0
+ standby 40 ip 192.168.40.1
+ standby 40 priority 110
+ standby 40 preempt
+ no shutdown
+
+interface Vlan60
+ ip address 192.168.60.2 255.255.255.0
+ standby 60 ip 192.168.60.1
+ standby 60 priority 110
+ standby 60 preempt
+ no shutdown
+
+interface Vlan80
+ ip address 192.168.80.2 255.255.255.0
+ standby 80 ip 192.168.80.1
+ standby 80 priority 110
+ standby 80 preempt
+ no shutdown
+
+! === OSPF Configuration ===
+router ospf 1
+ router-id 2.2.2.2
+ network 10.1.0.0 0.0.0.3 area 0
+ network 192.168.10.0 0.0.0.255 area 0
+ network 192.168.20.0 0.0.0.255 area 0
+ network 192.168.30.0 0.0.0.255 area 0
+ network 192.168.40.0 0.0.0.255 area 0
+ network 192.168.60.0 0.0.0.255 area 0
+ network 192.168.80.0 0.0.0.255 area 0
+
+! === STP Root Bridge ===
+spanning-tree vlan 10,20,30,40,60,80 priority 4096
+
+end
+copy running-config startup-config</pre>
+        </div>
+
+        <div class="subsection-title">6.2 Dist-SW2 (Standby - HSRP Priority 90)</div>
+        <div class="code-block">
+            <div class="code-header">Dist-SW2 (3560-24PS) - Standby Gateway</div>
+            <pre>enable
+configure terminal
+hostname Dist-SW2
+ip routing
+
+! === VLAN Configuration (same as Dist-SW1) ===
+vlan 10
+ name Floor1-Data
+vlan 20
+ name Floor2-Data
+vlan 30
+ name Floor3-Data
+vlan 40
+ name Server-Farm
+vlan 50
+ name DMZ
+vlan 60
+ name VoIP
+vlan 80
+ name Management
+vlan 99
+ name Native
+
+! === Uplink to Core Router ===
+interface GigabitEthernet0/1
+ description Uplink-to-Core-Router
+ no switchport
+ ip address 10.1.0.6 255.255.255.252
+ ip ospf network point-to-point
+ no shutdown
+
+! === Peer Link to Dist-SW1 ===
+interface GigabitEthernet0/2
+ description Peer-Link-to-Dist-SW1
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan all
+ no shutdown
+
+! === Trunks to Access Switches ===
+interface FastEthernet0/1
+ description Trunk-to-Access-SW1
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 10,60,80,99
+ no shutdown
+
+interface FastEthernet0/2
+ description Trunk-to-Access-SW2
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 20,60,80,99
+ no shutdown
+
+interface FastEthernet0/3
+ description Trunk-to-Access-SW3
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 30,60,80,99
+ no shutdown
+
+interface FastEthernet0/4
+ description Trunk-to-Server-SW
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 40,80,99
+ no shutdown
+
+interface FastEthernet0/5
+ description Trunk-to-VoIP-SW
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 60,80,99
+ no shutdown
+
+interface FastEthernet0/6
+ description Trunk-to-AP-SW
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 60,80,99
+ no shutdown
+
+interface FastEthernet0/7
+ description Trunk-to-DMZ-SW
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 50,80,99
+ no shutdown
+
+interface FastEthernet0/8
+ description Trunk-to-Mgmt-SW
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 80,99
+ no shutdown
+
+! === SVIs with HSRP (STANDBY - Priority 90) ===
+interface Vlan10
+ ip address 192.168.10.3 255.255.255.0
+ standby 10 ip 192.168.10.1
+ standby 10 priority 90
+ no shutdown
+
+interface Vlan20
+ ip address 192.168.20.3 255.255.255.0
+ standby 20 ip 192.168.20.1
+ standby 20 priority 90
+ no shutdown
+
+interface Vlan30
+ ip address 192.168.30.3 255.255.255.0
+ standby 30 ip 192.168.30.1
+ standby 30 priority 90
+ no shutdown
+
+interface Vlan40
+ ip address 192.168.40.3 255.255.255.0
+ standby 40 ip 192.168.40.1
+ standby 40 priority 90
+ no shutdown
+
+interface Vlan60
+ ip address 192.168.60.3 255.255.255.0
+ standby 60 ip 192.168.60.1
+ standby 60 priority 90
+ no shutdown
+
+interface Vlan80
+ ip address 192.168.80.3 255.255.255.0
+ standby 80 ip 192.168.80.1
+ standby 80 priority 90
+ no shutdown
+
+! === OSPF Configuration ===
+router ospf 1
+ router-id 3.3.3.3
+ network 10.1.0.4 0.0.0.3 area 0
+
+! === STP Secondary ===
+spanning-tree vlan 10,20,30,40,60,80 priority 8192
+
+end
+copy running-config startup-config</pre>
+        </div>
+
+        <div class="subsection-title">6.3 Access-SW1-Floor1 Configuration</div>
+        <div class="code-block">
+            <div class="code-header">Access-SW1-Floor1 (2960-24TT) - Floor 1</div>
+            <pre>enable
+configure terminal
+hostname Access-SW1-Floor1
+
+vlan 10
+ name Floor1-Data
+vlan 60
+ name VoIP
+vlan 80
+ name Management
+vlan 99
+ name Native
+
+! === Trunks to Distribution ===
+interface FastEthernet0/1
+ description Trunk-to-Dist-SW1
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 10,60,80,99
+ no shutdown
+
+interface FastEthernet0/2
+ description Trunk-to-Dist-SW2
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 10,60,80,99
+ no shutdown
+
+! === Access Ports for PCs ===
+interface FastEthernet0/3
+ description PC-F1-A
+ switchport mode access
+ switchport access vlan 10
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/4
+ description PC-F1-B
+ switchport mode access
+ switchport access vlan 10
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/5
+ description PC-F1-C
+ switchport mode access
+ switchport access vlan 10
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/6
+ description PC-F1-D
+ switchport mode access
+ switchport access vlan 10
+ spanning-tree portfast
+ no shutdown
+
+! === Management Interface ===
+interface Vlan80
+ ip address 192.168.80.11 255.255.255.0
+ no shutdown
+
+ip default-gateway 192.168.80.1
+
+end
+copy running-config startup-config</pre>
+        </div>
+
+        <div class="subsection-title">6.4 Access-SW2-Floor2 Configuration</div>
+        <div class="code-block">
+            <div class="code-header">Access-SW2-Floor2 (2960-24TT) - Floor 2</div>
+            <pre>enable
+configure terminal
+hostname Access-SW2-Floor2
+
+vlan 20
+ name Floor2-Data
+vlan 60
+ name VoIP
+vlan 80
+ name Management
+vlan 99
+ name Native
+
+interface FastEthernet0/1
+ description Trunk-to-Dist-SW1
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 20,60,80,99
+ no shutdown
+
+interface FastEthernet0/2
+ description Trunk-to-Dist-SW2
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 20,60,80,99
+ no shutdown
+
+interface FastEthernet0/3
+ description PC-F2-A
+ switchport mode access
+ switchport access vlan 20
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/4
+ description PC-F2-B
+ switchport mode access
+ switchport access vlan 20
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/5
+ description PC-F2-C
+ switchport mode access
+ switchport access vlan 20
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/6
+ description PC-F2-D
+ switchport mode access
+ switchport access vlan 20
+ spanning-tree portfast
+ no shutdown
+
+interface Vlan80
+ ip address 192.168.80.12 255.255.255.0
+ no shutdown
+
+ip default-gateway 192.168.80.1
+
+end
+copy running-config startup-config</pre>
+        </div>
+
+        <div class="subsection-title">6.5 Access-SW3-Floor3 Configuration</div>
+        <div class="code-block">
+            <div class="code-header">Access-SW3-Floor3 (2960-24TT) - Floor 3</div>
+            <pre>enable
+configure terminal
+hostname Access-SW3-Floor3
+
+vlan 30
+ name Floor3-Data
+vlan 60
+ name VoIP
+vlan 80
+ name Management
+vlan 99
+ name Native
+
+interface FastEthernet0/1
+ description Trunk-to-Dist-SW1
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 30,60,80,99
+ no shutdown
+
+interface FastEthernet0/2
+ description Trunk-to-Dist-SW2
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 30,60,80,99
+ no shutdown
+
+interface FastEthernet0/3
+ description PC-F3-A
+ switchport mode access
+ switchport access vlan 30
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/4
+ description PC-F3-B
+ switchport mode access
+ switchport access vlan 30
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/5
+ description PC-F3-C
+ switchport mode access
+ switchport access vlan 30
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/6
+ description PC-F3-D
+ switchport mode access
+ switchport access vlan 30
+ spanning-tree portfast
+ no shutdown
+
+interface Vlan80
+ ip address 192.168.80.13 255.255.255.0
+ no shutdown
+
+ip default-gateway 192.168.80.1
+
+end
+copy running-config startup-config</pre>
+        </div>
+
+        <div class="subsection-title">6.6 AP-SW Configuration (Access Point Switch)</div>
+        <div class="code-block">
+            <div class="code-header">AP-SW (2960-24TT)</div>
+            <pre>enable
+configure terminal
+hostname AP-SW
+
+vlan 60
+ name VoIP
+vlan 80
+ name Management
+vlan 99
+ name Native
+
+interface FastEthernet0/1
+ description Trunk-to-Dist-SW1
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 60,80,99
+ no shutdown
+
+interface FastEthernet0/2
+ description Trunk-to-Dist-SW2
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 60,80,99
+ no shutdown
+
+interface FastEthernet0/24
+ description Connection-to-Access-Point
+ switchport mode access
+ switchport access vlan 60
+ spanning-tree portfast
+ no shutdown
+
+interface Vlan80
+ ip address 192.168.80.15 255.255.255.0
+ no shutdown
+
+ip default-gateway 192.168.80.1
+
+end
+copy running-config startup-config</pre>
+        </div>
+
+        <div class="subsection-title">6.7 Server-SW Configuration</div>
+        <div class="code-block">
+            <div class="code-header">Server-SW (2960-24TT)</div>
+            <pre>enable
+configure terminal
+hostname Server-SW
+
+vlan 40
+ name Server-Farm
+vlan 80
+ name Management
+vlan 99
+ name Native
+
+interface FastEthernet0/1
+ description Trunk-to-Dist-SW1
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 40,80,99
+ no shutdown
+
+interface FastEthernet0/2
+ description Trunk-to-Dist-SW2
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 40,80,99
+ no shutdown
+
+interface FastEthernet0/3
+ description AD-Server
+ switchport mode access
+ switchport access vlan 40
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/4
+ description DNS-DHCP-Server
+ switchport mode access
+ switchport access vlan 40
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/5
+ description File-Server
+ switchport mode access
+ switchport access vlan 40
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/6
+ description Backup-Server
+ switchport mode access
+ switchport access vlan 40
+ spanning-tree portfast
+ no shutdown
+
+interface Vlan80
+ ip address 192.168.80.20 255.255.255.0
+ no shutdown
+
+ip default-gateway 192.168.80.1
+
+end
+copy running-config startup-config</pre>
+        </div>
+
+        <div class="subsection-title">6.8 VoIP-SW Configuration</div>
+        <div class="code-block">
+            <div class="code-header">VoIP-SW (2960-24TT)</div>
+            <pre>enable
+configure terminal
+hostname VoIP-SW
+
+vlan 60
+ name VoIP
+vlan 80
+ name Management
+vlan 99
+ name Native
+
+interface FastEthernet0/1
+ description Trunk-to-Dist-SW1
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 60,80,99
+ no shutdown
+
+interface FastEthernet0/2
+ description Trunk-to-Dist-SW2
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 60,80,99
+ no shutdown
+
+interface FastEthernet0/3
+ description SIP-PBX-Server
+ switchport mode access
+ switchport access vlan 60
+ spanning-tree portfast
+ no shutdown
+
+interface Vlan80
+ ip address 192.168.80.14 255.255.255.0
+ no shutdown
+
+ip default-gateway 192.168.80.1
+
+end
+copy running-config startup-config</pre>
+        </div>
+
+        <div class="subsection-title">6.9 DMZ-SW Configuration</div>
+        <div class="code-block">
+            <div class="code-header">DMZ-SW (2960-24TT)</div>
+            <pre>enable
+configure terminal
+hostname DMZ-SW
+
+vlan 50
+ name DMZ-Public-Servers
+vlan 80
+ name Management
+vlan 99
+ name Native
+
+interface FastEthernet0/24
+ description Uplink-to-Firewall
+ switchport mode access
+ switchport access vlan 50
+ no shutdown
+
+interface FastEthernet0/3
+ description Web-Server
+ switchport mode access
+ switchport access vlan 50
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/4
+ description Mail-Server
+ switchport mode access
+ switchport access vlan 50
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/5
+ description Public-DNS
+ switchport mode access
+ switchport access vlan 50
+ spanning-tree portfast
+ no shutdown
+
+interface FastEthernet0/6
+ description Proxy-Server
+ switchport mode access
+ switchport access vlan 50
+ spanning-tree portfast
+ no shutdown
+
+interface Vlan80
+ ip address 192.168.80.50 255.255.255.0
+ no shutdown
+
+ip default-gateway 192.168.80.1
+
+end
+copy running-config startup-config</pre>
+        </div>
+
+        <div class="subsection-title">6.10 Mgmt-SW Configuration (Management Switch)</div>
+        <div class="code-block">
+            <div class="code-header">Mgmt-SW (2960-24TT)</div>
+            <pre>enable
+configure terminal
+hostname Mgmt-SW
+
+vlan 80
+ name Management
+vlan 99
+ name Native
+
+interface FastEthernet0/1
+ description Trunk-to-Dist-SW1
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 80,99
+ no shutdown
+
+interface FastEthernet0/2
+ description Trunk-to-Dist-SW2
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 80,99
+ no shutdown
+
+interface Vlan80
+ ip address 192.168.80.30 255.255.255.0
+ no shutdown
+
+ip default-gateway 192.168.80.1
+
+end
+copy running-config startup-config</pre>
+        </div>
+    </div>
+
+    <!-- SECTION 8: SERVER SETUP -->
+    <div id="servers" class="section">
+        <div class="section-title">🖥️ Step 7: Server Configurations</div>
+        
+        <div class="subsection-title">7.1 DNS-DHCP-Server (192.168.40.11)</div>
+        <ul class="step-list">
+            <li>Double-click <strong>DNS-DHCP-Server</strong></li>
+            <li><strong>Desktop → IP Configuration:</strong> Static: IP 192.168.40.11, Mask 255.255.255.0, Gateway 192.168.40.1, DNS 192.168.40.11</li>
+            <li><strong>Services → DNS:</strong> Turn ON, Add records:
+                <ul><li>ad.company.com → 192.168.40.10</li><li>dhcp.company.com → 192.168.40.11</li><li>files.company.com → 192.168.40.12</li><li>backup.company.com → 192.168.40.13</li><li>intranet.company.com → 192.168.40.12</li><li>www.company.com → 172.16.50.11</li><li>mail.company.com → 172.16.50.10</li><li>dns.company.com → 172.16.50.12</li><li>proxy.company.com → 172.16.50.13</li></ul>
+            </li>
+            <li><strong>Services → DHCP:</strong> Turn ON, Add 4 pools:
+                <ul><li><strong>Floor1:</strong> Default Gateway 192.168.10.1, DNS 192.168.40.11, Start IP 192.168.10.50, Max Users 150</li>
+                <li><strong>Floor2:</strong> Default Gateway 192.168.20.1, DNS 192.168.40.11, Start IP 192.168.20.50, Max Users 150</li>
+                <li><strong>Floor3:</strong> Default Gateway 192.168.30.1, DNS 192.168.40.11, Start IP 192.168.30.50, Max Users 150</li>
+                <li><strong>VoIP:</strong> Default Gateway 192.168.60.1, DNS 192.168.40.11, Start IP 192.168.60.50, Max Users 50</li></ul>
+            </li>
+        </ul>
+
+        <div class="subsection-title">7.2 AD-Server (192.168.40.10) - Active Directory / LDAP</div>
+        <ul class="step-list">
+            <li>IP: 192.168.40.10, Mask 255.255.255.0, Gateway 192.168.40.1</li>
+            <li>Can simulate LDAP service for user authentication</li>
+        </ul>
+
+        <div class="subsection-title">7.3 File-Server (192.168.40.12) - SMB File Sharing</div>
+        <ul class="step-list">
+            <li>IP: 192.168.40.12, Mask 255.255.255.0, Gateway 192.168.40.1</li>
+            <li><strong>Services → FTP:</strong> Turn ON, Create users and shared folders</li>
+            <li>Create shared folder: "Shared Documents" with read/write access</li>
+        </ul>
+
+        <div class="subsection-title">7.4 Web-Server (172.16.50.11) - Public Website</div>
+        <ul class="step-list">
+            <li>IP: 172.16.50.11, Mask 255.255.255.0, Gateway 172.16.50.1</li>
+            <li><strong>Services → HTTP:</strong> Turn ON, Create <code>index.html</code> with company website content</li>
+        </ul>
+
+        <div class="subsection-title">7.5 Mail-Server (172.16.50.10) - Email Server</div>
+        <ul class="step-list">
+            <li>IP: 172.16.50.10, Mask 255.255.255.0, Gateway 172.16.50.1</li>
+            <li><strong>Services → EMAIL:</strong> Turn ON, Add users: user1/password123, user2/password123, admin/admin123</li>
+        </ul>
+
+        <div class="subsection-title">7.6 Public-DNS (172.16.50.12) - External DNS</div>
+        <ul class="step-list">
+            <li>IP: 172.16.50.12, Mask 255.255.255.0, Gateway 172.16.50.1</li>
+            <li><strong>Services → DNS:</strong> Turn ON, Add public records:
+                <ul><li>www.company.com → 172.16.50.11</li><li>mail.company.com → 172.16.50.10</li><li>dns.company.com → 172.16.50.12</li></ul>
+            </li>
+        </ul>
+
+        <div class="subsection-title">7.7 Proxy-Server (172.16.50.13) - Squid Proxy</div>
+        <ul class="step-list">
+            <li>IP: 172.16.50.13, Mask 255.255.255.0, Gateway 172.16.50.1</li>
+            <li>Configure HTTP proxy service on port 3128</li>
+        </ul>
+
+        <div class="subsection-title">7.8 SIP-PBX (192.168.60.10) - VoIP Call Control</div>
+        <ul class="step-list">
+            <li>IP: 192.168.60.10, Mask 255.255.255.0, Gateway 192.168.60.1</li>
+            <li>Configure SIP service on port 5060</li>
+            <li>Register VoIP phones/extensions</li>
+        </ul>
+
+        <div class="subsection-title">7.9 Backup-Server (192.168.40.13) - Data Backup</div>
+        <ul class="step-list">
+            <li>IP: 192.168.40.13, Mask 255.255.255.0, Gateway 192.168.40.1</li>
+            <li>Configure FTP/TFTP for backup storage</li>
+        </ul>
+
+        <div class="tip-box">
+            💡 <strong>Server Summary:</strong> 9 Servers Total - AD, DNS/DHCP, File, Backup, Web, Mail, Public DNS, Proxy, SIP-PBX
+        </div>
+    </div>
+
+    <!-- SECTION 9: SERVICES -->
+    <div id="services" class="section">
+        <div class="section-title">⚙️ Step 8: Services Overview</div>
+        
+        <div class="feature-grid">
+            <div class="feature-card"><div class="feature-icon">📡</div><div class="feature-title">DHCP</div><p>Automatic IP assignment for all floors and VoIP devices</p></div>
+            <div class="feature-card"><div class="feature-icon">🔍</div><div class="feature-title">DNS</div><p>Internal and external DNS resolution for all domains</p></div>
+            <div class="feature-card"><div class="feature-icon">🌐</div><div class="feature-title">HTTP/HTTPS</div><p>Public website (www.company.com) and internal intranet</p></div>
+            <div class="feature-card"><div class="feature-icon">📧</div><div class="feature-title">Email (SMTP/POP3)</div><p>Internal and external email with user1 and user2 accounts</p></div>
+            <div class="feature-card"><div class="feature-icon">📁</div><div class="feature-title">File Sharing (SMB)</div><p>Network file storage accessible via \\192.168.40.12\Shared</p></div>
+            <div class="feature-card"><div class="feature-icon">📞</div><div class="feature-title">VoIP (SIP)</div><p>Wireless VoIP calls between floors using SIP PBX</p></div>
+            <div class="feature-card"><div class="feature-icon">🏛️</div><div class="feature-title">Active Directory</div><p>User authentication and domain services</p></div>
+            <div class="feature-card"><div class="feature-icon">🔄</div><div class="feature-title">Proxy</div><p>Web filtering and caching via Squid proxy</p></div>
+            <div class="feature-card"><div class="feature-icon">💾</div><div class="feature-title">Backup</div><p>Automated data backup service</p></div>
+        </div>
+
+        <div class="subsection-title">Email Configuration for PCs</div>
+        <div class="code-block">
+            <div class="code-header">Email Client Settings</div>
+            <pre>Your Name: User One
+Email Address: user1@company.com
+Incoming Mail Server (POP3): 172.16.50.10
+Outgoing Mail Server (SMTP): 172.16.50.10
+Username: user1
+Password: password123</pre>
+        </div>
+
+        <div class="subsection-title">File Server Access</div>
+        <div class="code-block">
+            <div class="code-header">Accessing File Shares (Windows)</div>
+            <pre>\\192.168.40.12\Shared
+\\192.168.40.12\Users
+\\192.168.40.12\Projects</pre>
+        </div>
+
+        <div class="subsection-title">Website URLs</div>
+        <div class="code-block">
+            <div class="code-header">Internal & External Websites</div>
+            <pre>Internal Intranet: http://intranet.company.com or http://192.168.40.12
+Public Website:   http://www.company.com or http://172.16.50.11
+Mail Webmail:     http://mail.company.com or http://172.16.50.10</pre>
+        </div>
+    </div>
+
+    <!-- SECTION 10: TESTING -->
+    <div id="test" class="section">
+        <div class="section-title">✅ Step 9: Testing & Verification</div>
+        
+        <div class="subsection-title">9.1 Test Matrix</div>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>Test</th><th>Command / Action</th><th>Expected Result</th> </thead>
+                <tbody>
+                    <tr><td>DHCP on Floor 1 PC</td><td>PC-F1-A → Desktop → IP Configuration → DHCP</td><td>IP: 192.168.10.50-200</td></tr>
+                    <tr><td>Ping Gateway</td><td><code>ping 192.168.10.1</code></td><td>Replies received</td></tr>
+                    <tr><td>Cross-Floor Ping</td><td><code>ping 192.168.20.50</code></td><td>Replies received (router routes)</td></tr>
+                    <tr><td>WiFi Connection</td><td>VoIP-Laptop-F1 → PC Wireless → Connect to Company-VoIP</td><td>Connected, IP 192.168.60.x</td></tr>
+                    <tr><td>DNS Resolution</td><td><code>nslookup www.company.com</code></td><td>Returns 172.16.50.11</td></tr>
+                    <tr><td>Web Server</td><td>Browser → http://172.16.50.11</td><td>Company website loads</td></tr>
+                    <tr><td>Email Service</td><td>Send email from user1 to user2</td><td>Email received</td></tr>
+                    <tr><td>File Server</td><td>Browser → http://192.168.40.12</td><td>File listing appears</td></tr>
+                    <tr><td>Internet Access</td><td><code>ping 8.8.8.8</code></td><td>Replies received</td></tr>
+                    <tr><td>HSRP Status</td><td><code>show standby</code> on Dist-SW1</td><td>Active for all VLANs</td></tr>
+                    <tr><td>OSPF Neighbors</td><td><code>show ip ospf neighbor</code> on Core-Router</td><td>2 neighbors (2.2.2.2, 3.3.3.3)</td></tr>
+                    <tr><td>VLAN Trunk</td><td><code>show interfaces trunk</code> on Access-SW1</td><td>Trunk ports active</td></tr>
+                    <tr><td>NAT Translation</td><td><code>show ip nat translations</code> on Firewall</td><td>Dynamic entries present</td></tr>
+                    <tr><td>VoIP Call</td><td>Call from VoIP-Laptop-F1 to VoIP-Laptop-F2</td><td>Call connects</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="subsection-title">9.2 Verification Commands Summary</div>
+        <div class="code-block">
+            <div class="code-header">On Dist-SW1 (Active)</div>
+            <pre>show standby
+show ip ospf neighbor
+show spanning-tree vlan 10
+show vlan brief</pre>
+        </div>
+        <div class="code-block">
+            <div class="code-header">On Core-Router</div>
+            <pre>show ip route
+show ip ospf neighbor
+show ip ospf database</pre>
+        </div>
+        <div class="code-block">
+            <div class="code-header">On Firewall</div>
+            <pre>show ip nat translations
+show access-lists
+show ip route</pre>
+        </div>
+        <div class="code-block">
+            <div class="code-header">On Access-SW1</div>
+            <pre>show vlan brief
+show interfaces trunk
+show spanning-tree</pre>
+        </div>
+
+        <div class="success-box">
+            🎉 <strong>Congratulations!</strong> You have successfully built a complete enterprise network with:
+            <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
+                <li>3 Floors with 4 wired PCs and 1 wireless VoIP laptop each</li>
+                <li>Full redundancy with HSRP and dual uplinks</li>
+                <li>9 Servers providing DHCP, DNS, HTTP, Email, File Sharing, VoIP, AD, Proxy, Backup</li>
+                <li>3-Zone security with Firewall and DMZ</li>
+                <li>OSPF dynamic routing</li>
+                <li>Wireless network for VoIP devices</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>🏢 <strong>Complete Enterprise Network Design</strong> | Cisco Packet Tracer Implementation</p>
+        <p style="font-size: 0.8rem; margin-top: 0.5rem;">3 Floors | 12 Wired PCs | 3 Wireless VoIP Laptops | 9 Servers | Full Services (DHCP, DNS, HTTP, Email, VoIP, File Sharing, AD)</p>
+        <p style="font-size: 0.75rem; margin-top: 0.5rem;">© 2026 Computer Networks Lab | Complete Enterprise Infrastructure Design</p>
+    </div>
+</div>
+
+<script>
+    function showSection(sectionId) {
+        document.querySelectorAll('.section').forEach(section => {
+            section.classList.remove('active');
+        });
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.getElementById(sectionId).classList.add('active');
+        event.target.classList.add('active');
+    }
+</script>
+</body>
+</html>

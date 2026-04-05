@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4-Router RIP + OSPF Lab · Complete Step-by-Step Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #1a2c3e;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0a2a3b 0%, #0f3b4f 100%);
+            border-radius: 24px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header-left h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .network-badge {
+            background: #1e5a6e;
+            padding: 0.5rem 1rem;
+            border-radius: 40px;
+            font-size: 0.85rem;
+        }
+
+        .topology-section {
+            background: white;
+            border-radius: 24px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid #e1e8f0;
+        }
+
+        .topology-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .zoom-hint {
+            font-size: 0.8rem;
+            background: #eef2f5;
+            padding: 0.3rem 0.8rem;
+            border-radius: 30px;
+            cursor: pointer;
+            position: relative;
+            z-index: 10;
+        }
+
+        .topology-image {
+            text-align: center;
+            background: #fafbfc;
+            border-radius: 16px;
+            padding: 1rem;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .topology-image img {
+            width: 100%;
+            max-height: 400px;
+            object-fit: contain;
+            border-radius: 16px;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+            pointer-events: none;
+        }
+
+        /* ZOOM FUNCTIONALITY - FIXED */
+        .topology-image.zoomed {
+            cursor: zoom-out;
+            background: rgba(0, 0, 0, 0.95);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 9999;
+            padding: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            border-radius: 0;
+        }
+
+        .topology-image.zoomed img {
+            max-width: 95vw;
+            max-height: 95vh;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            transform: scale(1);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Remove old conflicting styles */
+        .zoomable-image.zoomed img {
+            transform: none;
+        }
+
+        .stats-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-item {
+            background: white;
+            border-radius: 20px;
+            padding: 1rem 1.5rem;
+            flex: 1;
+            text-align: center;
+            border: 1px solid #e1e8f0;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #6b7a8a;
+        }
+
+        .stat-number {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #0f3b4f;
+        }
+
+        .clock-table {
+            background: #f8f9fa;
+            border-radius: 16px;
+            padding: 1rem;
+            margin: 1rem 0;
+            border: 1px solid #e1e8f0;
+        }
+
+        .clock-table table {
+            width: 100%;
+            margin: 0;
+        }
+
+        .clock-table th, .clock-table td {
+            padding: 0.5rem;
+            text-align: center;
+            border-bottom: none;
+        }
+
+        .clock-table .dce { color: #2e7d5e; font-weight: bold; }
+        .clock-table .dte { color: #c0392b; font-weight: bold; }
+
+        .section-card {
+            background: white;
+            border-radius: 24px;
+            margin-bottom: 2rem;
+            border: 1px solid #e1e8f0;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: #fafbfc;
+            padding: 1rem 1.5rem;
+            border-bottom: 2px solid;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .section-header.rip { border-bottom-color: #e67e22; }
+        .section-header.ospf { border-bottom-color: #3498db; }
+        .section-header.acl { border-bottom-color: #9b59b6; }
+
+        .section-icon {
+            font-size: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .admin-distance {
+            font-size: 0.75rem;
+            background: #eef2f5;
+            padding: 0.2rem 0.7rem;
+            border-radius: 20px;
+            margin-left: auto;
+        }
+
+        .section-content {
+            padding: 1.5rem;
+        }
+
+        .step {
+            margin-bottom: 1.5rem;
+            border: 1px solid #e1e8f0;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .step-header {
+            background: #f8f9fa;
+            padding: 0.8rem 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            border-bottom: 1px solid #e1e8f0;
+        }
+
+        .step-number {
+            background: #0f3b4f;
+            width: 28px;
+            height: 28px;
+            border-radius: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        .step-title {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .step-content {
+            padding: 1.2rem;
+        }
+
+        .cli-cmd-block {
+            background: #0e1a24;
+            border-radius: 12px;
+            padding: 1.2rem;
+            font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+            font-size: 0.8rem;
+            overflow-x: auto;
+            color: #d4d4d4;
+            margin: 1rem 0;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .cli-output {
+            background: #1a2a36;
+            border-radius: 10px;
+            padding: 0.8rem;
+            font-family: monospace;
+            font-size: 0.8rem;
+            margin: 0.8rem 0;
+            color: #a5d6ff;
+        }
+
+        .info-note {
+            background: #e8f0fe;
+            border-left: 4px solid #3498db;
+            padding: 0.7rem 1rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+
+        .warning-note {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 0.7rem 1rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+
+        .success-note {
+            background: #e0f2e9;
+            border-left: 4px solid #10b981;
+            padding: 0.7rem 1rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+        }
+
+        .device-config {
+            background: #f0f2f5;
+            padding: 1rem;
+            border-radius: 12px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            margin: 1rem 0;
+            line-height: 1.6;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 1.5rem 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 16px;
+        }
+        th, td {
+            padding: 0.8rem;
+            border-bottom: 1px solid #e1e8f0;
+            text-align: left;
+        }
+        th { background: #f0f2f5; }
+        .success { color: #2e7d5e; font-weight: bold; }
+        .fail { color: #c0392b; font-weight: bold; }
+
+        .footer {
+            margin-top: 2.5rem;
+            background: #0a2a3b;
+            border-radius: 20px;
+            padding: 1.5rem;
+            color: #b0c4d4;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+
+        h3 {
+            margin: 1rem 0 0.5rem;
+            color: #0f3b4f;
+        }
+</style>
+</head>
+<body>
+    <!-- ========== NAVBAR INJECTION ========== -->
+<div id="navbar-container"></div>
+<script>
+    fetch('navbar.html')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('navbar-container').innerHTML = data;
+            
+            // Re-run navbar's initialization after loading
+            if (typeof window.initNavbar === 'undefined') {
+                // Small delay to ensure DOM is ready
+                setTimeout(() => {
+                    const navScript = document.querySelector('#navbar-container script');
+                    if (navScript) {
+                        eval(navScript.textContent);
+                    }
+                }, 50);
+            }
+        })
+        .catch(error => console.error('Navbar loading error:', error));
+</script>
+<!-- ========== END NAVBAR ========== -->
+<div class="container">
+    <div class="header">
+        <div class="header-left">
+            <h1>🔗 4-Router RIP + OSPF Network Lab</h1>
+            <p>Complete Configuration · Serial Mesh Topology · ACL Filtering</p>
+        </div>
+        <div class="network-badge">4 Routers | 2 Switches | 3 PCs | 1 Server</div>
+    </div>
+<!-- Topology -->
+<div class="topology-section">
+    <div class="topology-header">
+        <h2>📡 Network Topology</h2>
+        <div class="zoom-hint">🔍 Click to zoom</div>
+    </div>
+    <div class="topology-image">
+        <img src="images/acl.png">
+    </div>
+</div>
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-item"><div class="stat-label">Routers</div><div class="stat-number">4 (R0, R1, R2, R3)</div></div>
+        <div class="stat-item"><div class="stat-label">Serial Links</div><div class="stat-number">200.200.200.0 · 201.201.201.0 · 202.202.202.0 · 203.203.203.0</div></div>
+        <div class="stat-item"><div class="stat-label">LAN Networks</div><div class="stat-number">192.168.10.0 · 192.168.11.0 · 192.168.12.0</div></div>
+        <div class="stat-item"><div class="stat-label">End Devices</div><div class="stat-number">PC0, PC1, PC2, Server0</div></div>
+    </div>
+
+    <!-- Clock Rate Summary -->
+    <div class="clock-table">
+        <strong>⏱️ Clock Rate Settings (DCE/DTE)</strong>
+        <table style="margin-top:0.5rem;">
+            <thead>
+                <tr><th>Serial Link</th><th>DCE Router</th><th>Clock Rate</th><th>DTE Router</th><th>Clock Rate</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>R0 Se0/3/0 ↔ R1 Se0/3/0</td><td class="dce">R0 (DCE)</td><td>128000</td><td>R1 (DTE)</td><td>Not set</td></tr>
+                <tr><td>R1 Se0/3/1 ↔ R2 Se0/3/1</td><td class="dce">R1 (DCE)</td><td>128000</td><td>R2 (DTE)</td><td>Not set</td></tr>
+                <tr><td>R2 Se0/3/0 ↔ R3 Se0/3/1</td><td class="dce">R2 (DCE)</td><td>128000</td><td>R3 (DTE)</td><td>Not set</td></tr>
+                <tr><td>R3 Se0/3/0 ↔ R0 Se0/3/1</td><td class="dce">R3 (DCE)</td><td>128000</td><td>R0 (DTE)</td><td>Not set</td></tr>
+            </tbody>
+        </table>
+        <div class="info-note" style="margin-top:0.5rem;">💡 Only the DCE side needs clock rate. DTE side receives timing from DCE.</div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SECTION 1: RIP CONFIGURATION -->
+    <!-- ============================================ -->
+    <div class="section-card">
+        <div class="section-header rip">
+            <span class="section-icon">🔁</span>
+            <span class="section-title">SECTION 1: RIP v2 Configuration (Distance Vector)</span>
+            <span class="admin-distance">AD: 120</span>
+        </div>
+        <div class="section-content">
+
+            <!-- Step 1: Add Serial Modules -->
+            <div class="step">
+                <div class="step-header">
+                    <span class="step-number">1</span>
+                    <span class="step-title">Add Serial Modules to All Routers</span>
+                </div>
+                <div class="step-content">
+                    <div class="cli-cmd-block">
+<span class="prompt">Click Router → Physical tab → Power OFF → Drag HWIC-2T → Power ON</span>
+                    </div>
+                    <div class="cli-output">Repeat for Router0, Router1, Router2, Router3</div>
+                </div>
+            </div>
+
+            <!-- Step 2: Connect Cables -->
+            <div class="step">
+                <div class="step-header">
+                    <span class="step-number">2</span>
+                    <span class="step-title">Connect Serial Cables (Mesh Topology)</span>
+                </div>
+                <div class="step-content">
+                    <div class="cli-cmd-block">
+<span class="prompt">Router0 Se0/3/0 ──────── Router1 Se0/3/0  (200.200.200.0/30)</span>
+<span class="prompt">Router1 Se0/3/1 ──────── Router2 Se0/3/1  (201.201.201.0/30)</span>
+<span class="prompt">Router2 Se0/3/0 ──────── Router3 Se0/3/1  (202.202.202.0/30)</span>
+<span class="prompt">Router3 Se0/3/0 ──────── Router0 Se0/3/1  (203.203.203.0/30)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Ethernet Connections -->
+            <div class="step">
+                <div class="step-header">
+                    <span class="step-number">3</span>
+                    <span class="step-title">Connect Ethernet Cables</span>
+                </div>
+                <div class="step-content">
+                    <div class="cli-cmd-block">
+<span class="prompt">PC0 ─── Switch0 Fa0/1 ─── Switch0 Fa0/2 ─── Router0 G0/0</span>
+<span class="prompt">PC1 ─── Switch3 Fa0/1 ─── Switch3 Fa0/2 ─── Router3 G0/0</span>
+<span class="prompt">PC2 ─── Switch3 Fa0/3 ─── Switch3 Fa0/4 ─── Router2 G0/0</span>
+<span class="prompt">Server0 ─── Switch3 Fa0/5</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Router0 RIP -->
+            <div class="step">
+                <div class="step-header">
+                    <span class="step-number">4</span>
+                    <span class="step-title">Configure Router0 (RIP only)</span>
+                </div>
+                <div class="step-content">
+                    <div class="cli-cmd-block">
+<span class="prompt">Router0&gt; enable</span>
+<span class="prompt">Router0# configure terminal</span>
+<span class="config-prompt">Router0(config)#</span> hostname R0
+
+<span class="config-prompt">R0(config)#</span> interface gigabitEthernet 0/0
+<span class="config-prompt">R0(config-if)#</span> ip address 192.168.10.1 255.255.255.0
+<span class="config-prompt">R0(config-if)#</span> no shutdown
+<span class="config-prompt">R0(config-if)#</span> exit
+
+<span class="config-prompt">R0(config)#</span> interface serial 0/3/0
+<span class="config-prompt">R0(config-if)#</span> ip address 200.200.200.1 255.255.255.252
+<span class="config-prompt">R0(config-if)#</span> clock rate 128000
+<span class="config-prompt">R0(config-if)#</span> no shutdown
+<span class="config-prompt">R0(config-if)#</span> exit
+
+<span class="config-prompt">R0(config)#</span> interface serial 0/3/1
+<span class="config-prompt">R0(config-if)#</span> ip address 203.203.203.1 255.255.255.252
+<span class="config-prompt">R0(config-if)#</span> no shutdown
+<span class="config-prompt">R0(config-if)#</span> exit
+
+<span class="config-prompt">R0(config)#</span> router rip
+<span class="config-prompt">R0(config-router)#</span> version 2
+<span class="config-prompt">R0(config-router)#</span> no auto-summary
+<span class="config-prompt">R0(config-router)#</span> network 192.168.10.0
+<span class="config-prompt">R0(config-router)#</span> network 200.200.200.0
+<span class="config-prompt">R0(config-router)#</span> network 203.203.203.0
+<span class="config-prompt">R0(config-router)#</span> end
+<span class="prompt">R0#</span> write memory
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 5: Router1 RIP -->
+            <div class="step">
+                <div class="step-header">
+                    <span class="step-number">5</span>
+                    <span class="step-title">Configure Router1 (RIP only)</span>
+                </div>
+                <div class="step-content">
+                    <div class="cli-cmd-block">
+<span class="prompt">Router1&gt; enable</span>
+<span class="prompt">Router1# configure terminal</span>
+<span class="config-prompt">Router1(config)#</span> hostname R1
+
+<span class="config-prompt">R1(config)#</span> interface serial 0/3/0
+<span class="config-prompt">R1(config-if)#</span> ip address 200.200.200.2 255.255.255.252
+<span class="config-prompt">R1(config-if)#</span> no shutdown
+<span class="config-prompt">R1(config-if)#</span> exit
+
+<span class="config-prompt">R1(config)#</span> interface serial 0/3/1
+<span class="config-prompt">R1(config-if)#</span> ip address 201.201.201.1 255.255.255.252
+<span class="config-prompt">R1(config-if)#</span> clock rate 128000
+<span class="config-prompt">R1(config-if)#</span> no shutdown
+<span class="config-prompt">R1(config-if)#</span> exit
+
+<span class="config-prompt">R1(config)#</span> router rip
+<span class="config-prompt">R1(config-router)#</span> version 2
+<span class="config-prompt">R1(config-router)#</span> no auto-summary
+<span class="config-prompt">R1(config-router)#</span> network 200.200.200.0
+<span class="config-prompt">R1(config-router)#</span> network 201.201.201.0
+<span class="config-prompt">R1(config-router)#</span> end
+<span class="prompt">R1#</span> write memory
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 6: Router2 RIP -->
+            <div class="step">
+                <div class="step-header">
+                    <span class="step-number">6</span>
+                    <span class="step-title">Configure Router2 (RIP only)</span>
+                </div>
+                <div class="step-content">
+                    <div class="cli-cmd-block">
+<span class="prompt">Router2&gt; enable</span>
+<span class="prompt">Router2# configure terminal</span>
+<span class="config-prompt">Router2(config)#</span> hostname R2
+
+<span class="config-prompt">R2(config)#</span> interface gigabitEthernet 0/0
+<span class="config-prompt">R2(config-if)#</span> ip address 192.168.11.1 255.255.255.0
+<span class="config-prompt">R2(config-if)#</span> no shutdown
+<span class="config-prompt">R2(config-if)#</span> exit
+
+<span class="config-prompt">R2(config)#</span> interface serial 0/3/1
+<span class="config-prompt">R2(config-if)#</span> ip address 201.201.201.2 255.255.255.252
+<span class="config-prompt">R2(config-if)#</span> no shutdown
+<span class="config-prompt">R2(config-if)#</span> exit
+
+<span class="config-prompt">R2(config)#</span> interface serial 0/3/0
+<span class="config-prompt">R2(config-if)#</span> ip address 202.202.202.1 255.255.255.252
+<span class="config-prompt">R2(config-if)#</span> clock rate 128000
+<span class="config-prompt">R2(config-if)#</span> no shutdown
+<span class="config-prompt">R2(config-if)#</span> exit
+
+<span class="config-prompt">R2(config)#</span> router rip
+<span class="config-prompt">R2(config-router)#</span> version 2
+<span class="config-prompt">R2(config-router)#</span> no auto-summary
+<span class="config-prompt">R2(config-router)#</span> network 192.168.11.0
+<span class="config-prompt">R2(config-router)#</span> network 201.201.201.0
+<span class="config-prompt">R2(config-router)#</span> network 202.202.202.0
+<span class="config-prompt">R2(config-router)#</span> end
+<span class="prompt">R2#</span> write memory
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 7: Router3 RIP -->
+            <div class="step">
+                <div class="step-header">
+                    <span class="step-number">7</span>
+                    <span class="step-title">Configure Router3 (RIP only)</span>
+                </div>
+                <div class="step-content">
+                    <div class="cli-cmd-block">
+<span class="prompt">Router3&gt; enable</span>
+<span class="prompt">Router3# configure terminal</span>
+<span class="config-prompt">Router3(config)#</span> hostname R3
+
+<span class="config-prompt">R3(config)#</span> interface gigabitEthernet 0/0
+<span class="config-prompt">R3(config-if)#</span> ip address 192.168.12.1 255.255.255.0
+<span class="config-prompt">R3(config-if)#</span> no shutdown
+<span class="config-prompt">R3(config-if)#</span> exit
+
+<span class="config-prompt">R3(config)#</span> interface serial 0/3/1
+<span class="config-prompt">R3(config-if)#</span> ip address 202.202.202.2 255.255.255.252
+<span class="config-prompt">R3(config-if)#</span> no shutdown
+<span class="config-prompt">R3(config-if)#</span> exit
+
+<span class="config-prompt">R3(config)#</span> interface serial 0/3/0
+<span class="config-prompt">R3(config-if)#</span> ip address 203.203.203.2 255.255.255.252
+<span class="config-prompt">R3(config-if)#</span> clock rate 128000
+<span class="config-prompt">R3(config-if)#</span> no shutdown
+<span class="config-prompt">R3(config-if)#</span> exit
+
+<span class="config-prompt">R3(config)#</span> router rip
+<span class="config-prompt">R3(config-router)#</span> version 2
+<span class="config-prompt">R3(config-router)#</span> no auto-summary
+<span class="config-prompt">R3(config-router)#</span> network 192.168.12.0
+<span class="config-prompt">R3(config-router)#</span> network 202.202.202.0
+<span class="config-prompt">R3(config-router)#</span> network 203.203.203.0
+<span class="config-prompt">R3(config-router)#</span> end
+<span class="prompt">R3#</span> write memory
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 8: Verify RIP -->
+            <div class="step">
+                <div class="step-header">
+                    <span class="step-number">8</span>
+                    <span class="step-title">Verify RIP is Working</span>
+                </div>
+                <div class="step-content">
+                    <div class="cli-cmd-block">
+<span class="prompt">R0# show ip route rip</span>
+<span class="prompt">R0# show ip protocols</span>
+<span class="prompt">R2# show ip route rip</span>
+                    </div>
+                    <div class="success-note">✅ RIP should now be exchanging routes between all 4 routers.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SECTION 2: OSPF CONFIGURATION -->
+    <!-- ============================================ -->
+    <div class="section-card">
+        <div class="section-header ospf">
+            <span class="section-icon">⚡</span>
+            <span class="section-title">SECTION 2: OSPF Configuration (Link State)</span>
+            <span class="admin-distance">AD: 110</span>
+        </div>
+        <div class="section-content">
+            <div class="info-note">
+                💡 <strong>OSPF (Open Shortest Path First)</strong> is a link-state routing protocol. It uses cost as metric and converges faster than RIP.<br>
+                Now add OSPF on Router0 and Router3 (the edge routers). This creates a hybrid routing environment.
+            </div>
+
+            <div class="step">
+                <div class="step-header">
+                    <span class="step-number">1</span>
+                    <span class="step-title">Add OSPF to Router0</span>
+                </div>
+                <div class="step-content">
+                    <div class="cli-cmd-block">
+<span class="prompt">R0&gt; enable</span>
+<span class="prompt">R0# configure terminal</span>
+<span class="config-prompt">R0(config)#</span> router ospf 1
+<span class="config-prompt">R0(config-router)#</span> network 192.168.10.0 0.0.0.255 area 0
+<span class="config-prompt">R0(config-router)#</span> network 200.200.200.0 0.0.0.3 area 0
+<span class="config-prompt">R0(config-router)#</span> network 203.203.203.0 0.0.0.3 area 0
+<span class="config-prompt">R0(config-router)#</span> exit
+<span class="prompt">R0#</span> write memory
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-header">
+                    <span class="step-number">2</span>
+                    <span class="step-title">Add OSPF to Router3</span>
+                </div>
+                <div class="step-content">
+                    <div class="cli-cmd-block">
+<span class="prompt">R3&gt; enable</span>
+<span class="prompt">R3# configure terminal</span>
+<span class="config-prompt">R3(config)#</span> router ospf 1
+<span class="config-prompt">R3(config-router)#</span> network 192.168.12.0 0.0.0.255 area 0
+<span class="config-prompt">R3(config-router)#</span> network 202.202.202.0 0.0.0.3 area 0
+<span class="config-prompt">R3(config-router)#</span> network 203.203.203.0 0.0.0.3 area 0
+<span class="config-prompt">R3(config-router)#</span> exit
+<span class="prompt">R3#</span> write memory
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-header">
+                    <span class="step-number">3</span>
+                    <span class="step-title">Verify OSPF Neighbors</span>
+                </div>
+                <div class="step-content">
+                    <div class="cli-cmd-block">
+<span class="prompt">R0# show ip ospf neighbor</span>
+<span class="prompt">R0# show ip route ospf</span>
+<span class="prompt">R3# show ip ospf interface</span>
+                    </div>
+                    <div class="success-note">✅ OSPF neighbors should show FULL/DR state between R0 and R3.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SECTION 3: ACL & PC CONFIGURATION -->
+    <!-- ============================================ -->
+    <div class="section-card">
+        <div class="section-header acl">
+            <span class="section-icon">🛡️</span>
+            <span class="section-title">SECTION 3: ACL Rules & End Device Configuration</span>
+        </div>
+        <div class="section-content">
+
+            <div class="step">
+                <div class="step-header">
+                    <span class="step-number">1</span>
+                    <span class="step-title">Configure IP Addresses on PCs & Server</span>
+                </div>
+                <div class="step-content">
+                    <div class="cli-cmd-block">
+<span class="prompt">PC0:</span> IP 192.168.10.10 /24  Gateway: 192.168.10.1
+<span class="prompt">PC1:</span> IP 192.168.12.10 /24  Gateway: 192.168.12.1
+<span class="prompt">PC2:</span> IP 192.168.11.10 /24  Gateway: 192.168.11.1
+<span class="prompt">Server0:</span> IP 192.168.12.100 /24  Gateway: 192.168.12.1  (HTTP: On)
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-header">
+                    <span class="step-number">2</span>
+                    <span class="step-title">ACL 101: Block HTTP from 192.168.12.0 to 192.168.11.0, Allow Ping</span>
+                </div>
+                <div class="step-content">
+                    <div class="cli-cmd-block">
+<span class="prompt">R3&gt; enable</span>
+<span class="prompt">R3# configure terminal</span>
+<span class="config-prompt">R3(config)#</span> access-list 101 deny tcp 192.168.12.0 0.0.0.255 192.168.11.0 0.0.0.255 eq www
+<span class="config-prompt">R3(config)#</span> access-list 101 permit icmp 192.168.12.0 0.0.0.255 192.168.11.0 0.0.0.255 echo
+<span class="config-prompt">R3(config)#</span> access-list 101 permit ip any any
+<span class="config-prompt">R3(config)#</span> interface gigabitEthernet 0/0
+<span class="config-prompt">R3(config-if)#</span> ip access-group 101 in
+<span class="config-prompt">R3(config-if)#</span> end
+<span class="prompt">R3#</span> write memory
+                    </div>
+                    <div class="info-note">🎯 Result: PC1 (192.168.12.10) can PING PC2 (192.168.11.10) but CANNOT browse HTTP.</div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-header">
+                    <span class="step-number">3</span>
+                    <span class="step-title">ACL 102: Block Ping from 192.168.10.0 to 192.168.12.0</span>
+                </div>
+                <div class="step-content">
+                    <div class="cli-cmd-block">
+<span class="prompt">R0&gt; enable</span>
+<span class="prompt">R0# configure terminal</span>
+<span class="config-prompt">R0(config)#</span> access-list 102 deny icmp 192.168.10.0 0.0.0.255 192.168.12.0 0.0.0.255 echo
+<span class="config-prompt">R0(config)#</span> access-list 102 permit ip any any
+<span class="config-prompt">R0(config)#</span> interface gigabitEthernet 0/0
+<span class="config-prompt">R0(config-if)#</span> ip access-group 102 in
+<span class="config-prompt">R0(config-if)#</span> end
+<span class="prompt">R0#</span> write memory
+                    </div>
+                    <div class="info-note">🎯 Result: PC0 (192.168.10.10) CANNOT PING PC1 (192.168.12.10) but can browse HTTP.</div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-header">
+                    <span class="step-number">4</span>
+                    <span class="step-title">PC2 (Staff) has Full Access</span>
+                </div>
+                <div class="step-content">
+                    <div class="cli-cmd-block">
+<span class="prompt">PC2&gt; ping 192.168.10.10</span>  → Success (Can ping PC0)
+<span class="prompt">PC2&gt; ping 192.168.12.10</span>  → Success (Can ping PC1)
+<span class="prompt">PC2&gt; browse 192.168.12.100</span> → Success (Can access Server0 HTTP)
+                    </div>
+                    <div class="success-note">🎯 Result: PC2 has full ping and browse access to all networks.</div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-header">
+                    <span class="step-number">5</span>
+                    <span class="step-title">Final Verification Commands</span>
+                </div>
+                <div class="step-content">
+                    <div class="cli-cmd-block">
+<span class="prompt">PC0&gt; ping 192.168.12.10</span>    → Request timed out (Blocked by ACL 102)
+<span class="prompt">PC0&gt; browse 192.168.12.100</span>   → Success (HTTP works)
+<span class="prompt">PC1&gt; ping 192.168.11.10</span>    → Success (ICMP allowed)
+<span class="prompt">PC1&gt; browse 192.168.11.10</span>   → Blocked (HTTP denied by ACL 101)
+<span class="prompt">PC2&gt; ping 192.168.10.10</span>    → Success (Full access)
+<span class="prompt">PC2&gt; browse 192.168.12.100</span>   → Success (Full access)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Matrix -->
+    <h2>📊 Complete Connectivity Test Matrix</h2>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr><th>Source</th><th>Destination</th><th>Type</th><th>Result</th><th>Reason</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>PC0 (192.168.10.10)</td><td>PC1 (192.168.12.10)</td><td>Ping</td><td class="fail">✗ Blocked</td><td>ACL 102 denies ICMP</td></tr>
+                <tr><td>PC0 (192.168.10.10)</td><td>Server0 (192.168.12.100)</td><td>HTTP</td><td class="success">✓ Success</td><td>No HTTP blocking rule</td></tr>
+                <tr><td>PC1 (192.168.12.10)</td><td>PC2 (192.168.11.10)</td><td>Ping</td><td class="success">✓ Success</td><td>ICMP permitted by ACL 101</td></tr>
+                <tr><td>PC1 (192.168.12.10)</td><td>PC2 (192.168.11.10)</td><td>HTTP</td><td class="fail">✗ Blocked</td><td>ACL 101 denies HTTP</td></tr>
+                <tr><td>PC2 (192.168.11.10)</td><td>PC0 (192.168.10.10)</td><td>Ping</td><td class="success">✓ Success</td><td>No ACL blocking</td></tr>
+                <tr><td>PC2 (192.168.11.10)</td><td>PC1 (192.168.12.10)</td><td>HTTP</td><td class="success">✓ Success</td><td>No ACL blocking</td></tr>
+                <tr><td>PC2 (192.168.11.10)</td><td>Server0</td><td>Both</td><td class="success">✓ Success</td><td>Full access</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- IP Summary -->
+    <div class="device-config">
+        <strong>📋 Complete IP Addressing Summary</strong><br><br>
+        <strong>Router0:</strong> G0/0=192.168.10.1/24 | Se0/3/0=200.200.200.1/30 (clock 128000) | Se0/3/1=203.203.203.1/30 (no clock)<br>
+        <strong>Router1:</strong> Se0/3/0=200.200.200.2/30 (no clock) | Se0/3/1=201.201.201.1/30 (clock 128000)<br>
+        <strong>Router2:</strong> G0/0=192.168.11.1/24 | Se0/3/1=201.201.201.2/30 (no clock) | Se0/3/0=202.202.202.1/30 (clock 128000)<br>
+        <strong>Router3:</strong> G0/0=192.168.12.1/24 | Se0/3/1=202.202.202.2/30 (no clock) | Se0/3/0=203.203.203.2/30 (clock 128000)<br><br>
+        <strong>PC0:</strong> 192.168.10.10/24 | Gateway: 192.168.10.1<br>
+        <strong>PC1:</strong> 192.168.12.10/24 | Gateway: 192.168.12.1<br>
+        <strong>PC2:</strong> 192.168.11.10/24 | Gateway: 192.168.11.1<br>
+        <strong>Server0:</strong> 192.168.12.100/24 | Gateway: 192.168.12.1 | HTTP: ON
+    </div>
+
+    <div class="footer">
+        <p>📌 4-Router RIP + OSPF Lab | Complete Beginner Guide</p>
+        <p style="margin-top:0.5rem; font-size:0.75rem;">© 2026 · Serial Mesh Topology | Clock Rate: 128000 on DCE side | ACL Filtering</p>
+    </div>
+</div>
+<script>
+    // Fixed zoom functionality for topology image
+    document.addEventListener('DOMContentLoaded', function() {
+        const topologyImage = document.querySelector('.topology-image');
+        
+        if (topologyImage) {
+            topologyImage.addEventListener('click', function(e) {
+                // Don't zoom if clicking on zoom hint
+                if (e.target.classList && e.target.classList.contains('zoom-hint')) {
+                    return;
+                }
+                // Check if clicking on span or element inside zoom-hint
+                if (e.target.closest && e.target.closest('.zoom-hint')) {
+                    return;
+                }
+                this.classList.toggle('zoomed');
+            });
+        }
+        
+        // Close zoom when pressing ESC key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const zoomed = document.querySelector('.topology-image.zoomed');
+                if (zoomed) {
+                    zoomed.classList.remove('zoomed');
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>

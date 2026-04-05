@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab 5: Smart Home IoT Controller | Wireless Devices · Home Gateway · IoT Registration</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Additional styles for smart home page */
+        .user-experience-card {
+            background: linear-gradient(135deg, #f0f7ff, #ffffff);
+            border-radius: 28px;
+            border: 1px solid #cbdde9;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        }
+
+        .user-experience-card p {
+            font-size: 1.05rem;
+            margin-bottom: 1rem;
+            color: #1f2a3f;
+            line-height: 1.7;
+        }
+
+        .user-experience-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            color: #0b1c33;
+        }
+
+        .highlight-code {
+            background: #eef2ff;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-family: 'SF Mono', monospace;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #1e3a5f;
+        }
+
+        .step-image-placeholder {
+            margin: 1.5rem 0 1rem;
+            background: #f8fafd;
+            border-radius: 20px;
+            padding: 1rem;
+            text-align: center;
+            border: 1px dashed #cbd5e1;
+        }
+
+        .fig-ref {
+            font-size: 0.85rem;
+            color: #546e7a;
+            text-align: center;
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+
+        .cli-cmd-block {
+            background: #0f1a27;
+            border-radius: 20px;
+            padding: 1.5rem;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.9rem;
+            line-height: 1.7;
+            overflow-x: auto;
+            color: #e2e8f0;
+            border-left: 4px solid #3b82f6;
+            margin: 1rem 0;
+        }
+
+        .cli-cmd-block .prompt { color: #86efac; }
+        .cli-cmd-block .config-prompt { color: #facc15; }
+
+        .note-box {
+            background: #fefce8;
+            border-left: 4px solid #eab308;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            margin: 1rem 0;
+            font-size: 0.95rem;
+        }
+
+        .step-content ul, .step-content ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .step-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .device-config {
+            background: #f1f5f9;
+            padding: 1rem;
+            border-radius: 16px;
+            font-family: monospace;
+            margin: 1rem 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-item {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid #e2e9f0;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #546e7a;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: #0b1c33;
+        }
+
+        /* Fix for zoomable-image - matches style.css */
+        .topology-image {
+            padding: 2rem;
+            background: #ffffff;
+            display: flex;
+            justify-content: center;
+            cursor: zoom-in;
+            transition: background 0.2s;
+            position: relative;
+        }
+
+        .topology-image svg {
+            max-width: 100%;
+            height: auto;
+            border-radius: 16px;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+            pointer-events: none;
+        }
+
+        .topology-image.zoomed {
+            cursor: zoom-out;
+            background: rgba(0,0,0,0.95);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1000;
+            padding: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+
+        .topology-image.zoomed svg {
+            max-width: 95vw;
+            max-height: 95vh;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ========== NAVBAR INJECTION ========== -->
+<div id="navbar-container"></div>
+<script>
+    fetch('navbar.html')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('navbar-container').innerHTML = data;
+            
+            // Re-run navbar's initialization after loading
+            if (typeof window.initNavbar === 'undefined') {
+                // Small delay to ensure DOM is ready
+                setTimeout(() => {
+                    const navScript = document.querySelector('#navbar-container script');
+                    if (navScript) {
+                        eval(navScript.textContent);
+                    }
+                }, 50);
+            }
+        })
+        .catch(error => console.error('Navbar loading error:', error));
+</script>
+<!-- ========== END NAVBAR ========== -->
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <h1>🏠 Smart Home IoT Controller</h1>
+            <p>Wireless IoT Devices · Home Gateway Configuration · IoT Registration & Control</p>
+        </div>
+        <div class="network-badge">🌐 192.168.25.0/24 · Home Gateway · 5 IoT Devices</div>
+    </div>
+
+    <!-- Topology Image with Zoom -->
+    <div class="topology-section">
+        <div class="topology-header">
+            <h2>Network Topology – Smart Home IoT Architecture</h2>
+            <div class="zoom-hint"><span>🔍</span> Click image to zoom</div>
+        </div>
+       <div class="topology-image zoomable-image">
+            <img src="images/wireless.png" alt="Network topology diagram for Application Layer Services">
+            
+        </div>
+    </div>
+
+    <!-- Download Section -->
+    <div class="download-card">
+        <div class="download-text">
+            <h3>📄 Packet Tracer File (Complete IoT Lab)</h3>
+            <p>Home Gateway · Light · Fan · AC · Speaker · Motion Sensor</p>
+        </div>
+        <a href="#" class="download-link" download="Smart_Home_IoT_Lab.pkt">⬇ Download .pkt</a>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="stats-grid">
+        <div class="stat-item"><div class="stat-label">Home Gateway IP</div><div class="stat-number">192.168.25.1</div></div>
+        <div class="stat-item"><div class="stat-label">IoT Devices</div><div class="stat-number">5 Active</div></div>
+        <div class="stat-item"><div class="stat-label">Wireless SSID</div><div class="stat-number">SmartHome-Network</div></div>
+        <div class="stat-item"><div class="stat-label">Control Method</div><div class="stat-number">IoT Monitor</div></div>
+    </div>
+
+    <!-- USER EXPERIENCE SECTION -->
+    <div class="user-experience-card">
+        <h3>👨‍💻 User Experience – What a User Actually Does</h3>
+        <p>Imagine you are sitting in your living room with your <strong class="highlight-code">laptop</strong>. You don't need to know anything about IP addresses, wireless configuration, or server settings. The moment you open your laptop, it automatically connects to the <strong class="highlight-code">SmartHome-Network</strong> WiFi. To control your smart devices, you open the <strong class="highlight-code">IoT Monitor</strong> application on your desktop. You log in with <strong>admin/admin</strong>, and instantly you see all your registered devices: <strong>Light, Fan, AC, Speaker, and Motion Sensor</strong>.</p>
+        <p>To turn on the living room light, you simply click the <strong class="highlight-code">ON</strong> button next to "Light" — the light turns on instantly. To turn on the AC, you click its ON button. Everything is just one click away. Behind the scenes, the <strong class="highlight-code">Home Gateway (192.168.25.1)</strong> receives your command and sends it wirelessly to the specific device. You don't need to know which IP address each device has — the Home Gateway handles all the addressing automatically.</p>
+        <p>If you want to check if motion is detected, you look at the Motion Sensor reading on the dashboard — it shows "Active" or "Inactive". The system can even be configured with <strong class="highlight-code">automatic rules</strong>: when motion is detected, the light turns on automatically; when the temperature rises, the AC activates. From your perspective, the house just "knows" what to do — all the magic happens at the application layer, with protocols like DHCP assigning IPs and the IoT server managing device communication.</p>
+        <p>✨ <strong>Key takeaway:</strong> Users only need to click buttons in the IoT Monitor. The Home Gateway manages all wireless communication, device registration, and command delivery. This lab perfectly mirrors how real-world smart home systems like Amazon Alexa or Google Home work.</p>
+    </div>
+
+    <!-- DETAILED STEP-BY-STEP IMPLEMENTATION -->
+    <h2>📝 Step-by-Step Implementation</h2>
+    <div class="steps">
+
+        <!-- STEP 1: Set Up Topology -->
+        <div class="step">
+            <div class="step-header">
+                <span class="step-number">1</span>
+                <span class="step-title">Set Up the IoT Network Topology</span>
+            </div>
+            <div class="step-content">
+                <p><strong>Open Cisco Packet Tracer</strong></p>
+                <p><strong>Add devices to workspace:</strong></p>
+                <ul>
+                    <li>Network Devices → Wireless Devices → Drag <strong>Home Gateway</strong></li>
+                    <li>IoT Devices → Home → Drag <strong>Light, Fan, AC, Speaker</strong></li>
+                    <li>IoT Devices → Sensors → Drag <strong>Motion Detector</strong></li>
+                    <li>End Devices → Drag <strong>Laptop</strong> (for control)</li>
+                </ul>
+                <p><strong>Position devices as shown in Figure 5.1 above</strong></p>
+                <div class="step-image-placeholder">
+                    <svg width="100%" height="80" viewBox="0 0 600 60"><rect width="600" height="60" fill="#eef2ff" rx="12"/><text x="300" y="35" text-anchor="middle" fill="#1e3a5f" font-size="11">📡 Topology: Home Gateway (192.168.25.1) + 5 IoT Devices + Laptop Controller</text></svg>
+                    <div class="fig-ref">📌 Figure 5.2: Topology with Home Gateway, IoT devices, and Laptop</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 2: Configure Home Gateway -->
+        <div class="step">
+            <div class="step-header">
+                <span class="step-number">2</span>
+                <span class="step-title">Configure Home Gateway Wireless Settings</span>
+            </div>
+            <div class="step-content">
+                <p><strong>Click Home Gateway → Config tab → Wireless</strong></p>
+                <ul>
+                    <li>Set <strong>SSID</strong>: <code>SmartHome-Network</code></li>
+                    <li>Set <strong>Channel</strong>: 6</li>
+                    <li>Ensure <strong>Wireless</strong> is <strong>ON</strong></li>
+                    <li>Note the gateway IP: <code>192.168.25.1</code></li>
+                </ul>
+                <div class="device-config">
+                    Gateway IP: 192.168.25.1 | SSID: SmartHome-Network | DHCP Range: 192.168.25.50 - 192.168.25.100
+                </div>
+                <div class="fig-ref">📌 Figure 5.3: Home Gateway Wireless Configuration Panel</div>
+            </div>
+        </div>
+
+        <!-- STEP 3: Connect IoT Devices to WiFi -->
+        <div class="step">
+            <div class="step-header">
+                <span class="step-number">3</span>
+                <span class="step-title">Connect IoT Devices to Wireless Network</span>
+            </div>
+            <div class="step-content">
+                <p><strong>For EACH IoT device (Light, Fan, AC, Speaker, Motion):</strong></p>
+                <ul>
+                    <li>Click device → Config tab → Wireless0</li>
+                    <li>Set <strong>SSID</strong>: <code>SmartHome-Network</code></li>
+                    <li>Ensure <strong>Power</strong> is <strong>ON</strong></li>
+                    <li>Set <strong>IP Configuration</strong> to DHCP (automatically gets IP from Home Gateway)</li>
+                </ul>
+                <div class="cli-cmd-block">
+<span class="prompt">Light:</span> Connected to SmartHome-Network | IP: 192.168.25.50<br>
+<span class="prompt">Fan:</span> Connected to SmartHome-Network | IP: 192.168.25.51<br>
+<span class="prompt">AC:</span> Connected to SmartHome-Network | IP: 192.168.25.52<br>
+<span class="prompt">Speaker:</span> Connected to SmartHome-Network | IP: 192.168.25.53<br>
+<span class="prompt">Motion Sensor:</span> Connected to SmartHome-Network | IP: 192.168.25.54
+                </div>
+                <div class="fig-ref">📌 Figure 5.4: IoT Device Wireless Configuration (Light shown)</div>
+            </div>
+        </div>
+
+        <!-- STEP 4: Register Devices to IoT Server -->
+        <div class="step">
+            <div class="step-header">
+                <span class="step-number">4</span>
+                <span class="step-title">Register Devices to IoT Server (Home Gateway)</span>
+            </div>
+            <div class="step-content">
+                <p><strong>For EACH IoT device:</strong></p>
+                <ul>
+                    <li>In Config tab, scroll to <strong>IoT Server</strong> section</li>
+                    <li>Set <strong>Server Address</strong> to <code>192.168.25.1</code> (Home Gateway IP)</li>
+                    <li>Wait 5-10 seconds — device status will change to <strong>"Registered"</strong></li>
+                </ul>
+                <div class="cli-output">
+                    ✅ Light: Registered to IoT Server 192.168.25.1<br>
+                    ✅ Fan: Registered to IoT Server 192.168.25.1<br>
+                    ✅ AC: Registered to IoT Server 192.168.25.1<br>
+                    ✅ Speaker: Registered to IoT Server 192.168.25.1<br>
+                    ✅ Motion Sensor: Registered to IoT Server 192.168.25.1
+                </div>
+                <div class="note-box">
+                    💡 <strong>Important:</strong> Registration allows the Home Gateway to discover and control each IoT device. Without registration, devices won't appear in the IoT Monitor dashboard.
+                </div>
+                <div class="fig-ref">📌 Figure 5.5: IoT Device Registration to Home Gateway (IoT Server Address = 192.168.25.1)</div>
+            </div>
+        </div>
+
+        <!-- STEP 5: Configure Laptop and Access IoT Monitor -->
+        <div class="step">
+            <div class="step-header">
+                <span class="step-number">5</span>
+                <span class="step-title">Configure Laptop and Access IoT Monitor</span>
+            </div>
+            <div class="step-content">
+                <p><strong>Connect Laptop to WiFi:</strong></p>
+                <ul>
+                    <li>Click Laptop → Config → Wireless0</li>
+                    <li>Select SSID: <code>SmartHome-Network</code> from dropdown</li>
+                    <li>Laptop gets IP via DHCP (e.g., 192.168.25.100)</li>
+                </ul>
+                <p><strong>Verify Laptop IP:</strong></p>
+                <ul>
+                    <li>Laptop → Desktop → <strong>Command Prompt</strong></li>
+                    <li>Type: <code>ipconfig</code> → IP should be 192.168.25.100</li>
+                    <li>Ping Home Gateway: <code>ping 192.168.25.1</code> → Should get replies</li>
+                </ul>
+                <p><strong>Open IoT Monitor:</strong></p>
+                <ul>
+                    <li>Laptop → Desktop → <strong>IoT Monitor</strong> (dashboard icon)</li>
+                    <li>Login with:
+                        <ul>
+                            <li><strong>IoT Server Address:</strong> <code>192.168.25.1</code></li>
+                            <li><strong>Username:</strong> <code>admin</code></li>
+                            <li><strong>Password:</strong> <code>admin</code></li>
+                        </ul>
+                    </li>
+                    <li>Click <strong>Login</strong></li>
+                </ul>
+                <div class="device-config">
+                    IoT Monitor Dashboard: Shows all 5 registered IoT devices with current status
+                </div>
+                <div class="fig-ref">📌 Figure 5.6: IoT Monitor Login Screen and Dashboard</div>
+            </div>
+        </div>
+
+        <!-- STEP 6: Test Device Control -->
+        <div class="step">
+            <div class="step-header">
+                <span class="step-number">6</span>
+                <span class="step-title">Test Individual Device Control</span>
+            </div>
+            <div class="step-content">
+                <p><strong>Control Light:</strong></p>
+                <ul>
+                    <li>In IoT Monitor dashboard, find <strong>Light</strong></li>
+                    <li>Click the <strong>ON</strong> button</li>
+                    <li>Observe: The Light in workspace changes appearance (turns on)</li>
+                    <li>Click <strong>OFF</strong> → Light turns off</li>
+                </ul>
+                <p><strong>Test all devices:</strong></p>
+                <div class="cli-cmd-block">
+<span class="prompt">Fan:</span> Click ON → Fan starts spinning<br>
+<span class="prompt">AC:</span> Click ON → AC display shows cooling mode<br>
+<span class="prompt">Speaker:</span> Click ON → Speaker icon shows active
+                </div>
+                <p><strong>Monitor Motion Sensor:</strong></p>
+                <ul>
+                    <li>Motion Sensor shows "Active" or "Inactive" status</li>
+                </ul>
+                <div class="fig-ref">📌 Figure 5.7: Device Control in IoT Monitor (ON/OFF buttons)</div>
+            </div>
+        </div>
+
+        <!-- STEP 7: Create Automation Rules -->
+        <div class="step">
+            <div class="step-header">
+                <span class="step-number">7</span>
+                <span class="step-title">Create Automation Rules (Optional)</span>
+            </div>
+            <div class="step-content">
+                <p><strong>In IoT Monitor, navigate to Rules/Conditions tab</strong></p>
+                
+                <p><strong>Rule 1 - Motion-Activated Light:</strong></p>
+                <div class="cli-cmd-block">
+IF Motion Sensor = Active<br>
+THEN Light = ON<br>
+Delay: OFF after 30 seconds
+                </div>
+                
+                <p><strong>Rule 2 - Welcome Home:</strong></p>
+                <div class="cli-cmd-block">
+IF Motion Sensor = Active AND Time = Evening<br>
+THEN Light = ON, Speaker = ON (Welcome message)
+                </div>
+                
+                <p><strong>Rule 3 - Energy Saver:</strong></p>
+                <div class="cli-cmd-block">
+IF Motion Sensor = Inactive FOR 30 minutes<br>
+THEN Light = OFF, Fan = OFF, Speaker = OFF, AC = OFF
+                </div>
+                
+                <p><strong>To create a rule:</strong></p>
+                <ul>
+                    <li>Click <strong>Add Rule</strong> or <strong>Create Condition</strong></li>
+                    <li>Select trigger device and condition (e.g., Motion Sensor = Active)</li>
+                    <li>Select action device and action (e.g., Light = ON)</li>
+                    <li>Click <strong>Save</strong> or <strong>Apply</strong></li>
+                </ul>
+                <div class="fig-ref">📌 Figure 5.8: Automation Rules Configuration Panel</div>
+            </div>
+        </div>
+
+        <!-- STEP 8: Create Smart Scenes -->
+        <div class="step">
+            <div class="step-header">
+                <span class="step-number">8</span>
+                <span class="step-title">Create Smart Scenes (One-Click Actions)</span>
+            </div>
+            <div class="step-content">
+                <p><strong>In IoT Monitor, navigate to Scenes tab → Create New Scene</strong></p>
+                
+                <p><strong>Movie Night Scene:</strong></p>
+                <div class="device-config">
+                    🎬 Movie Night:<br>
+                    • Light → OFF<br>
+                    • AC → ON (set to 22°C)<br>
+                    • Fan → OFF<br>
+                    • Speaker → ON (Volume 40%)
+                </div>
+                
+                <p><strong>Party Mode Scene:</strong></p>
+                <div class="device-config">
+                    🎉 Party Mode:<br>
+                    • Light → ON (Brightness: 100%)<br>
+                    • Speaker → ON (Volume: 80%)<br>
+                    • Fan → ON<br>
+                    • AC → ON (20°C)
+                </div>
+                
+                <p><strong>Sleep Mode Scene:</strong></p>
+                <div class="device-config">
+                    😴 Sleep Mode:<br>
+                    • Light → OFF<br>
+                    • Speaker → OFF<br>
+                    • Fan → ON (Low Speed)<br>
+                    • AC → ON (24°C)
+                </div>
+                
+                <p><strong>To create a scene:</strong></p>
+                <ul>
+                    <li>Click <strong>Create New Scene</strong></li>
+                    <li>Enter scene name (e.g., "Movie Night")</li>
+                    <li>Click <strong>Add Action</strong> for each device</li>
+                    <li>Select device and desired state (ON/OFF/specific value)</li>
+                    <li>Click <strong>Save Scene</strong></li>
+                </ul>
+                <div class="fig-ref">📌 Figure 5.9: Scene Creation Panel</div>
+            </div>
+        </div>
+
+        <!-- STEP 9: Verification -->
+        <div class="step">
+            <div class="step-header">
+                <span class="step-number">9</span>
+                <span class="step-title">Verify All Services</span>
+            </div>
+            <div class="step-content">
+                <p><strong>Test Manual Control:</strong> Click each device ON/OFF → Verify devices respond</p>
+                <p><strong>Test Motion Rule:</strong> Click Motion Sensor → Config → Set to "Active" → Light should turn ON</p>
+                <p><strong>Test Scene:</strong> Click Movie Night scene → All devices change to scene settings</p>
+                
+                <div class="cli-output">
+                    ✅ All 5 IoT devices responding correctly<br>
+                    ✅ Automatic rules triggering as configured<br>
+                    ✅ Smart scenes executing multi-device commands<br>
+                    ✅ Full smart home functionality verified
+                </div>
+                
+                <div class="note-box">
+                    💡 <strong>Insight:</strong> This lab demonstrates how DHCP provides IP addresses automatically, how IoT devices register to a central server, and how the application layer (HTTP/HTTPS) enables remote device control. The Home Gateway acts as both a wireless access point and an IoT server.
+                </div>
+                <div class="fig-ref">📌 Figure 5.10: Final Verification Dashboard with All Devices</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Verification Table -->
+    <h2>✅ Service Verification & Results</h2>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr><th>Service/Feature</th><th>User Action</th><th>Expected Outcome</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Wireless Connectivity</td><td>Power on devices</td><td>All devices get IP from Home Gateway (192.168.25.x)</td><td class="success">✓ Success</td></tr>
+                <tr><td>IoT Registration</td><td>Set Server Address to 192.168.25.1</td><td>All devices show "Registered" in Config tab</td><td class="success">✓ Success</td></tr>
+                <tr><td>IoT Monitor Access</td><td>Login with admin/admin</td><td>Dashboard shows all 5 registered devices</td><td class="success">✓ Success</td></tr>
+                <tr><td>Manual Device Control</td><td>Click ON/OFF buttons</td><td>Devices respond in workspace</td><td class="success">✓ Success</td></tr>
+                <tr><td>Motion-Activated Light</td><td>Trigger Motion Sensor</td><td>Light turns ON automatically</td><td class="success">✓ Success</td></tr>
+                <tr><td>Movie Night Scene</td><td>Click Scene button</td><td>Light OFF, AC ON, Fan OFF, Speaker ON</td><td class="success">✓ Success</td></tr>
+                <tr><td>Sensor Readings</td><td>View dashboard</td><td>Motion status displayed</td><td class="success">✓ Success</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="footer-content">
+            <div class="footer-column"><h4>Resources</h4><ul><li><a href="#">Packet Tracer File</a></li><li><a href="#">IoT Configuration Guide</a></li><li><a href="#">Smart Home Design</a></li></ul></div>
+            <div class="footer-column"><h4>Documentation</h4><ul><li><a href="#">Home Gateway Setup</a></li><li><a href="#">IoT Registration</a></li><li><a href="#">Automation Rules</a></li></ul></div>
+            <div class="footer-column"><h4>Labs</h4><ul><li><a href="#">DHCP Server</a></li><li><a href="#">DNS Configuration</a></li><li><a href="#">VLAN Design</a></li></ul></div>
+            <div class="footer-column"><h4>Connect</h4><ul><li><a href="#">GitHub</a></li><li><a href="#">LinkedIn</a></li><li><a href="#">Portfolio</a></li></ul></div>
+        </div>
+        <div class="footer-bottom">
+            <div class="creator-name">Nazmul Islam Abir (43)</div>
+            <div class="footer-links"><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Contact</a></div>
+            <div class="copyright">© 2026 · Computer Networks Lab | Smart Home IoT Controller</div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Zoom Script -->
+<script>
+    document.querySelectorAll('.zoomable-image').forEach(el => {
+        el.addEventListener('click', function(e) {
+            this.classList.toggle('zoomed');
+        });
+    });
+</script>
+</body>
+</html>
