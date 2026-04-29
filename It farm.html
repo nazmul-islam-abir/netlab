@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Enterprise Network Documentation - Prince</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 15mm 12mm;
+            background-color: #f8fafc;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #1e293b;
+            line-height: 1.5;
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 0;
+        }
+        .header-banner {
+            background-color: #1e3a8a;
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 0 0 15px 15px;
+            margin-bottom: 30px;
+        }
+        .container {
+            padding: 0 10px;
+        }
+        h1 { margin: 0; font-size: 24pt; }
+        h2 { 
+            color: #1e3a8a; 
+            border-left: 5px solid #3b82f6; 
+            padding-left: 10px; 
+            margin-top: 40px;
+            font-size: 16pt;
+            background: #eff6ff;
+            padding-top: 5px;
+            padding-bottom: 5px;
+        }
+        h3 { color: #0f172a; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; margin-top: 25px; font-size: 13pt; }
+        
+        .card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            page-break-inside: avoid;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 10pt;
+        }
+        th { background-color: #334155; color: white; padding: 10px; text-align: left; }
+        td { border: 1px solid #e2e8f0; padding: 8px; }
+        tr:nth-child(even) { background-color: #f1f5f9; }
+
+        pre {
+            background-color: #0f172a;
+            color: #f8fafc;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 9pt;
+            overflow-x: hidden;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .label {
+            font-weight: bold;
+            color: #2563eb;
+        }
+        .footer {
+            text-align: center;
+            font-size: 9pt;
+            color: #64748b;
+            margin-top: 50px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header-banner">
+    <h1>Project Network Documentation</h1>
+    <p>VLSM Subnetting | Inter-VLAN Routing | Multi-Server Architecture</p>
+</div>
+
+<div class="container">
+
+    <!-- 1. VLSM SUBNETTING DESIGN -->
+    <div class="card">
+        <h2>1. VLSM Subnetting Table (Network: 192.168.10.0)</h2>
+        <p>Prioritizing subnets based on host requirements to minimize IP waste.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>VLAN / Unit</th>
+                    <th>Required</th>
+                    <th>Allocated</th>
+                    <th>Network Address</th>
+                    <th>CIDR</th>
+                    <th>Subnet Mask</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>VLAN 10 (Management)</td><td>40</td><td>62</td><td>192.168.10.0</td><td>/26</td><td>255.255.255.192</td></tr>
+                <tr><td>VLAN 20 (Cashier)</td><td>20</td><td>30</td><td>192.168.10.64</td><td>/27</td><td>255.255.255.224</td></tr>
+                <tr><td>VLAN 30 (Client)</td><td>10</td><td>14</td><td>192.168.10.96</td><td>/28</td><td>255.255.255.240</td></tr>
+                <tr><td>Router Serial Link</td><td>2</td><td>2</td><td>200.200.200.0</td><td>/30</td><td>255.255.255.252</td></tr>
+                <tr><td>Server Farm LAN</td><td>-</td><td>254</td><td>192.168.11.0</td><td>/24</td><td>255.255.255.0</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 2. CORE ROUTER CONFIGURATIONS -->
+    <h2>2. Router Configurations</h2>
+    
+    <div class="card">
+        <h3>Main Branch Core Router</h3>
+        <p>Configured with Router-on-a-Stick for Inter-VLAN routing and DHCP Relay (Helper-Address).</p>
+        <pre>
+enable
+configure terminal
+hostname Main-Branch-Router
+
+interface GigabitEthernet0/0/0
+ no shutdown
+exit
+
+interface GigabitEthernet0/0/0.10
+ encapsulation dot1Q 10
+ ip address 192.168.10.1 255.255.255.192
+ ip helper-address 192.168.11.2
+exit
+
+interface GigabitEthernet0/0/0.20
+ encapsulation dot1Q 20
+ ip address 192.168.10.65 255.255.255.224
+ ip helper-address 192.168.11.2
+exit
+
+interface GigabitEthernet0/0/0.30
+ encapsulation dot1Q 30
+ ip address 192.168.10.97 255.255.255.240
+ ip helper-address 192.168.11.2
+exit
+
+interface Serial0/3/1
+ ip address 200.200.200.1 255.255.255.252
+ no shutdown
+exit
+
+ip route 192.168.11.0 255.255.255.0 200.200.200.2
+end
+        </pre>
+    </div>
+
+    <div class="card">
+        <h3>Server Farm Core Router</h3>
+        <p>Handles the server subnet and return routes to the branch VLANs.</p>
+        <pre>
+enable
+configure terminal
+hostname Server-Farm-Router
+
+interface GigabitEthernet0/0/0
+ ip address 192.168.11.1 255.255.255.0
+ no shutdown
+exit
+
+interface Serial0/3/0
+ ip address 200.200.200.2 255.255.255.252
+ clock rate 64000
+ no shutdown
+exit
+
+ip route 192.168.10.0 255.255.255.192 200.200.200.1
+ip route 192.168.10.64 255.255.255.224 200.200.200.1
+ip route 192.168.10.96 255.255.255.240 200.200.200.1
+end
+        </pre>
+    </div>
+
+    <!-- 3. SWITCH CONFIGURATIONS -->
+    <h2>3. Switch Configurations</h2>
+
+    <div class="card">
+        <h3>Main Branch Switch (F1-SW)</h3>
+        <p>Acting as the Distribution Switch. All ports are Trunks.</p>
+        <pre>
+vlan 10
+ name Management
+vlan 20
+ name Cashier
+vlan 30
+ name Client
+exit
+
+interface range fa0/1 - 3
+ switchport mode trunk
+ no shutdown
+        </pre>
+    </div>
+
+    <div class="card">
+        <h3>Room 1 & Room 2 Switches</h3>
+        <p>Access layer configuration for end-user PCs.</p>
+        <pre>
+vlan 10
+ name Management
+vlan 20
+ name Cashier
+vlan 30
+ name Client
+exit
+
+interface fa0/1
+ switchport mode trunk
+exit
+
+interface range fa0/2 - 10
+ switchport access vlan 10
+ switchport mode access
+exit
+
+interface range fa0/11 - 15
+ switchport access vlan 20
+ switchport mode access
+exit
+
+interface range fa0/16 - 20
+ switchport access vlan 30
+ switchport mode access
+exit
+        </pre>
+    </div>
+
+    <!-- 4. SERVER & DHCP SETUP -->
+    <div class="card">
+        <h2>4. Server & DHCP Pool Setup</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Pool Name</th>
+                    <th>Gateway</th>
+                    <th>DNS Server</th>
+                    <th>Start IP</th>
+                    <th>Max Users</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>VLAN10_Mgmt</td><td>192.168.10.1</td><td>192.168.11.4</td><td>192.168.10.2</td><td>60</td></tr>
+                <tr><td>VLAN20_Cashier</td><td>192.168.10.65</td><td>192.168.11.4</td><td>192.168.10.66</td><td>28</td></tr>
+                <tr><td>VLAN30_Client</td><td>192.168.10.97</td><td>192.168.11.4</td><td>192.168.10.98</td><td>12</td></tr>
+            </tbody>
+        </table>
+        <p><span class="label">DNS Settings:</span> A-Record for <code>www.mainbranch.com</code> pointing to <code>192.168.11.3</code></p>
+    </div>
+
+    <div class="footer">
+        <p>Network Design Documentation © 2026 | Prepared for RUET CSE Presentation</p>
+    </div>
+
+</div>
+
+<div class="card">
+        <h2>5. Branch 2 Floor Configuration (F2-SW)</h2>
+        <p>Expansion for the 192.168.12.0/24 network connected via Main Router Gig0/1.</p>
+        
+        <h3>Main Branch Core Router - Gig0/1 CLI</h3>
+        <pre>
+enable
+configure terminal
+interface GigabitEthernet0/1
+ description LINK_TO_BRANCH_2_F2_SW
+ ip address 192.168.12.1 255.255.255.0
+ ip helper-address 192.168.11.2
+ no shutdown
+exit
+        </pre>
+
+        <h3>F2-SW Switch CLI</h3>
+        <pre>
+enable
+configure terminal
+hostname F2-SW
+interface fa0/1
+ description UPLINK_TO_MAIN_ROUTER
+ switchport mode access
+exit
+interface range fa0/2 - 10
+ description BRANCH_2_USER_PCS
+ switchport mode access
+ no shutdown
+exit
+        </pre>
+    </div>
+
+    <div class="card">
+        <h2>6. Application Services Setup</h2>
+        
+        <h3>Email Server Configuration (IP: 192.168.11.2)</h3>
+        <p>Configured via the <strong>Services > EMAIL</strong> tab in Packet Tracer.</p>
+        <ul>
+            <li><strong>Domain Name:</strong> <code>mainbranch.com</code></li>
+            <li><strong>SMTP Server:</strong> 192.168.11.2</li>
+            <li><strong>POP3 Server:</strong> 192.168.11.2</li>
+        </ul>
+        <table>
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Password</th>
+                    <th>Access For</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>admin</td><td>admin123</td><td>Management PCs</td></tr>
+                <tr><td>cashier</td><td>cash123</td><td>Cashier PCs</td></tr>
+                <tr><td>staff</td><td>staff123</td><td>Branch 2 PCs</td></tr>
+            </tbody>
+        </table>
+
+        <h3>HTTP/HTTPS Web Server (IP: 192.168.11.3)</h3>
+        <p>Configured via <strong>Services > HTTP</strong>. Index.html updated to display enterprise branding.</p>
+    </div>
+
+    <div class="card">
+        <h2>7. Server Farm Return Path Update</h2>
+        <p>Essential update for the <strong>Server-Farm-Router</strong> to recognize the new Branch 2 network.</p>
+        <pre>
+enable
+configure terminal
+ip route 192.168.12.0 255.255.255.0 200.200.200.1
+end
+write memory
+        </pre>
+    </div>
+
+    <div class="card">
+        <h2>10. ISP Infrastructure & Dynamic Routing (OSPF & RIP)</h2>
+        <p>Implementation of a redundant loop using OSPF (Administrative Distance 110) and RIPv2 (Administrative Distance 120).</p>
+
+        <h3>A. ISP 1 Router CLI</h3>
+        <pre>
+hostname ISP1-Router
+interface Serial0/3/0
+ ip address 203.203.203.2 255.255.255.252
+ no shutdown
+exit
+interface Serial0/3/1
+ ip address 201.201.201.1 255.255.255.252
+ no shutdown
+exit
+router ospf 1
+ network 203.203.203.0 0.0.0.3 area 0
+ network 201.201.201.0 0.0.0.3 area 0
+router rip
+ version 2
+ network 203.203.203.0
+ network 201.201.201.0
+        </pre>
+
+        <h3>B. ISP 2 Router CLI</h3>
+        <pre>
+hostname ISP2-Router
+interface Serial0/3/1
+ ip address 201.201.201.2 255.255.255.252
+ no shutdown
+exit
+interface Serial0/3/0
+ ip address 202.202.202.1 255.255.255.252
+ no shutdown
+exit
+interface GigabitEthernet0/0
+ ip address 192.168.13.1 255.255.255.0
+ no shutdown
+exit
+router ospf 1
+ network 201.201.201.0 0.0.0.3 area 0
+ network 202.202.202.0 0.0.0.3 area 0
+ network 192.168.13.0 0.0.0.255 area 0
+router rip
+ version 2
+ network 201.201.201.0
+ network 202.202.202.0
+ network 192.168.13.0
+        </pre>
+    </div>
+
+    <div class="card">
+        <h2>11. ISP Branch Office (192.168.13.0/24)</h2>
+        <p>Connecting the remote ISP branch to the backbone via Gig0/0.</p>
+        
+        <h3>ISP-Branch-Router CLI</h3>
+        <pre>
+hostname ISP-Branch-Router
+interface GigabitEthernet0/0
+ ip address 192.168.13.2 255.255.255.0
+ no shutdown
+exit
+router ospf 1
+ network 192.168.13.0 0.0.0.255 area 0
+router rip
+ version 2
+ network 192.168.13.0
+        </pre>
+    </div>
+
+    <div class="card">
+        <h2>12. Routing Protocol Verification</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Protocol</th>
+                    <th>Code</th>
+                    <th>Admin Distance</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>OSPF</strong></td>
+                    <td>O</td>
+                    <td>110</td>
+                    <td style="color:green; font-weight:bold;">Active (Primary)</td>
+                </tr>
+                <tr>
+                    <td><strong>RIPv2</strong></td>
+                    <td>R</td>
+                    <td>120</td>
+                    <td style="color:orange; font-weight:bold;">Backup (Redundant)</td>
+                </tr>
+            </tbody>
+        </table>
+        <p><em>Note: If OSPF link fails, RIP routes will automatically populate the routing table to maintain connectivity.</em></p>
+    </div>
+
+
+    <div class="card">
+        <h2>13. Access Control Lists (Standard & Extended)</h2>
+        <p>Security policies implemented to control inter-branch traffic and service access.</p>
+
+        <h3>Standard ACL: VLAN 10 Isolation</h3>
+        <p>Blocks all traffic from Management (VLAN 10) to Branch 2.</p>
+        <pre>
+access-list 10 deny 192.168.10.0 0.0.0.63
+access-list 10 permit any
+interface GigabitEthernet0/1
+ ip access-group 10 out
+        </pre>
+
+        <h3>Extended ACL: Service-Based Filtering (VLAN 20 & 30)</h3>
+        <p>VLAN 20 is restricted to ICMP only, while VLAN 30 is restricted to Web (HTTP) only for Branch 2 destinations.</p>
+        <pre>
+# VLAN 20: Allow Ping, Block Web
+ip access-list extended VLAN20_FILTER
+ permit icmp 192.168.10.64 0.0.0.31 192.168.12.0 0.0.0.255
+ deny tcp 192.168.10.64 0.0.0.31 192.168.12.0 0.0.0.255 eq 80
+ permit ip any any
+
+# VLAN 30: Block Ping, Allow Web
+ip access-list extended VLAN30_FILTER
+ deny icmp 192.168.10.96 0.0.0.15 192.168.12.0 0.0.0.255
+ permit tcp 192.168.10.96 0.0.0.15 192.168.12.0 0.0.0.255 eq 80
+ permit ip any any
+        </pre>
+    </div>
+
+
+    <div class="card">
+        <h2>15. Branch 2 Web Service & DNS Configuration</h2>
+        <p>To verify the Extended ACL policies, a dedicated Web Server was added to Branch 2. This allows for the testing of protocol-specific filtering (Blocking Ping vs. Allowing Web).</p>
+
+        <div style="background: #f8fafc; border: 1px dashed #3b82f6; padding: 15px; border-radius: 8px;">
+            <h3>Branch 2 Server Details</h3>
+            <ul>
+                <li><strong>Server Role:</strong> Web Server (HTTP)</li>
+                <li><strong>IP Address:</strong> <code>192.168.12.10</code></li>
+                <li><strong>Subnet Mask:</strong> 255.255.255.0</li>
+                <li><strong>Default Gateway:</strong> 192.168.12.1</li>
+            </ul>
+        </div>
+
+        <h3>DNS Server Update (Central DNS)</h3>
+        <p>The central DNS Server (192.168.11.4) was updated with a new resource record to allow domain-name testing from all VLANs.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Domain Name</th>
+                    <th>Record Type</th>
+                    <th>Address (IP)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>www.floor2.com</strong></td>
+                    <td>A-Record</td>
+                    <td>192.168.12.10</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card" style="border-top: 4px solid #1e3a8a;">
+        <h2>16. Final Verification: ACL & DNS Integration</h2>
+        <p>This table represents the final expected behavior in Packet Tracer when using the domain name.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>PC Location</th>
+                    <th>Action</th>
+                    <th>Expected Result</th>
+                    <th>ACL Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>VLAN 20 (Cashier)</td>
+                    <td>Browser to <code>www.floor2.com</code></td>
+                    <td style="color:red; font-weight:bold;">CONNECTION FAILED</td>
+                    <td>DENY TCP 80</td>
+                </tr>
+                <tr>
+                    <td>VLAN 20 (Cashier)</td>
+                    <td>Ping <code>192.168.12.10</code></td>
+                    <td style="color:green; font-weight:bold;">REPLY SUCCESS</td>
+                    <td>PERMIT ICMP</td>
+                </tr>
+                <tr>
+                    <td>VLAN 30 (Client)</td>
+                    <td>Browser to <code>www.floor2.com</code></td>
+                    <td style="color:green; font-weight:bold;">WEBPAGE LOADS</td>
+                    <td>PERMIT TCP 80</td>
+                </tr>
+                <tr>
+                    <td>VLAN 30 (Client)</td>
+                    <td>Ping <code>192.168.12.10</code></td>
+                    <td style="color:red; font-weight:bold;">REQUEST TIMED OUT</td>
+                    <td>DENY ICMP</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>17. Enterprise NAT/PAT Implementation</h2>
+        <p>Configured to translate all internal private traffic (VLANs and Branch 2) into public-facing routable addresses when communicating with ISP1, ISP2, and the ISP Branch.</p>
+
+        <div style="background: #f0fdf4; border-left: 5px solid #22c55e; padding: 15px; margin: 15px 0;">
+            <strong>NAT Logic:</strong> Any packet originating from <code>192.168.10.0/24</code> or <code>192.168.12.0/24</code> has its Source IP translated to the Serial interface IP (<code>203.203.203.1</code>) before reaching the ISP backbone.
+        </div>
+
+        <h3>NAT/PAT CLI Code</h3>
+        <pre>
+# Inside Interfaces (VLANs & Floor 2)
+interface GigabitEthernet0/0.10
+ ip nat inside
+interface GigabitEthernet0/0.20
+ ip nat inside
+interface GigabitEthernet0/0.30
+ ip nat inside
+interface GigabitEthernet0/1
+ ip nat inside
+
+# Outside Interface (ISP Link)
+interface Serial0/3/0
+ ip nat outside
+
+# Permitting All Internal Subnets
+access-list 1 permit 192.168.10.0 0.0.0.255
+access-list 1 permit 192.168.12.0 0.0.0.255
+
+# Mapping to Public IP
+ip nat inside source list 1 interface Serial0/3/0 overload
+        </pre>
+
+        <h3>NAT Translation Verification</h3>
+        <p>To demonstrate NAT during the live presentation, use <code>show ip nat translations</code> after initiating pings to different ISP routers.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Inside Local (Private)</th>
+                    <th>Inside Global (Public)</th>
+                    <th>Target Destination</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>192.168.10.5 (VLAN 10)</td>
+                    <td>203.203.203.1</td>
+                    <td>201.201.201.2 (ISP2)</td>
+                </tr>
+                <tr>
+                    <td>192.168.12.10 (Branch 2)</td>
+                    <td>203.203.203.1</td>
+                    <td>192.168.13.2 (ISP Branch)</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Project Documentation - PUC.COM</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 1000px; margin: 0 auto; padding: 20px; background-color: #f0f2f5; }
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1 { color: #1a73e8; text-align: center; border-bottom: 3px solid #1a73e8; padding-bottom: 10px; }
+        h2 { color: #2c3e50; border-left: 5px solid #1a73e8; padding-left: 15px; margin-top: 30px; background: #f8f9fa; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #dee2e6; padding: 12px; text-align: left; }
+        th { background-color: #1a73e8; color: white; }
+        pre { background: #272822; color: #f8f8f2; padding: 15px; border-radius: 8px; overflow-x: auto; font-size: 0.9em; }
+        .note { background-color: #fff3cd; border: 1px solid #ffeeba; padding: 15px; border-radius: 5px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Enterprise Network Configuration Guide</h1>
+
+    <h2>1. VLSM Addressing Plan (Network: 192.168.10.0)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Department</th>
+                <th>VLAN</th>
+                <th>Hosts</th>
+                <th>Network ID</th>
+                <th>Subnet Mask</th>
+                <th>Usable Range</th>
+                <th>Gateway</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>Service</td><td>10</td><td>60</td><td>192.168.10.0</td><td>255.255.255.192</td><td>.2 - .62</td><td>192.168.10.1</td></tr>
+            <tr><td>IT-PCS</td><td>20</td><td>20</td><td>192.168.10.64</td><td>255.255.255.224</td><td>.66 - .94</td><td>192.168.10.65</td></tr>
+            <tr><td>Admin</td><td>30</td><td>10</td><td>192.168.10.96</td><td>255.255.255.240</td><td>.98 - .110</td><td>192.168.10.97</td></tr>
+            <tr><td>Server Farm</td><td>-</td><td>-</td><td>192.168.11.0</td><td>255.255.255.0</td><td>.2 - .254</td><td>192.168.11.1</td></tr>
+            <tr><td>Serial Link</td><td>-</td><td>2</td><td>200.200.200.0</td><td>255.255.255.252</td><td>.1 - .2</td><td>N/A</td></tr>
+        </tbody>
+    </table>
+
+    <h2>2. Router CLI Configuration</h2>
+    
+    <h3>A. HQ Core Router (Gateway & DHCP Relay)</h3>
+    <pre>
+enable
+configure terminal
+hostname HQ-Core-Router
+
+# Sub-interfaces for Inter-VLAN Routing
+interface gig0/0.10
+ encapsulation dot1Q 10
+ ip address 192.168.10.1 255.255.255.192
+ ip helper-address 192.168.11.2
+ exit
+
+interface gig0/0.20
+ encapsulation dot1Q 20
+ ip address 192.168.10.65 255.255.255.224
+ ip helper-address 192.168.11.2
+ exit
+
+interface gig0/0.30
+ encapsulation dot1Q 30
+ ip address 192.168.10.97 255.255.255.240
+ ip helper-address 192.168.11.2
+ exit
+
+interface gig0/0
+ no shutdown
+
+# Serial Link to Server Site
+interface Serial0/3/0
+ ip address 200.200.200.1 255.255.255.252
+ clock rate 64000
+ no shutdown
+
+# Static Route to Server Network
+ip route 192.168.11.0 255.255.255.0 200.200.200.2
+    </pre>
+
+    <h3>B. Server Core Router</h3>
+    <pre>
+enable
+configure terminal
+hostname Server-Router
+
+interface gig0/0
+ ip address 192.168.11.1 255.255.255.0
+ no shutdown
+
+interface Serial0/3/0
+ ip address 200.200.200.2 255.255.255.252
+ no shutdown
+
+# Static Route back to HQ Departments
+ip route 192.168.10.0 255.255.255.0 200.200.200.1
+    </pre>
+
+    <h2>3. Centralized Server Setup (GUI Configuration)</h2>
+    <div class="note">Perform these settings in the <strong>Desktop > IP Config</strong> and <strong>Services</strong> tabs of the servers.</div>
+
+    <h3>A. DHCP Server (192.168.11.2)</h3>
+    <table>
+        <tr><th>Pool Name</th><th>Gateway</th><th>DNS Server</th><th>Start IP</th><th>Subnet Mask</th></tr>
+        <tr><td>VLAN10_Service</td><td>192.168.10.1</td><td>192.168.11.4</td><td>192.168.10.2</td><td>255.255.255.192</td></tr>
+        <tr><td>VLAN20_IT</td><td>192.168.10.65</td><td>192.168.11.4</td><td>192.168.10.66</td><td>255.255.255.224</td></tr>
+        <tr><td>VLAN30_Admin</td><td>192.168.10.97</td><td>192.168.11.4</td><td>192.168.10.98</td><td>255.255.255.240</td></tr>
+    </table>
+
+    <h3>B. DNS Server (192.168.11.4)</h3>
+    <pre>
+Service: ON
+Record 1: puc.com -> Type: A Record -> Address: 192.168.11.3
+Record 2: mail.puc.com -> Type: A Record -> Address: 192.168.11.2
+    </pre>
+
+    <h3>C. Email Server (192.168.11.2)</h3>
+    <pre>
+Service: SMTP & POP3 ON
+Domain Name: puc.com
+Users:
+1. User: admin | Pass: 123
+2. User: it | Pass: 123
+3. User: service | Pass: 123
+    </pre>
+
+    <h2>4. End-User Device (PC) Setup</h2>
+    <div class="note">
+        1. Open PC <strong>Desktop > IP Configuration</strong>.<br>
+        2. Toggle the radio button from <strong>Static</strong> to <strong>DHCP</strong>.<br>
+        3. Ensure the PC receives an IP from its correct subnet (e.g., VLAN 10 should get 192.168.10.X).<br>
+        4. In the <strong>Email</strong> app, use: <br>
+        - Email: admin@puc.com <br>
+        - Incoming/Outgoing Server: 192.168.11.2
+    </div>
+
+    <section class="network-setup" style="margin-top: 40px;">
+    <div style="background: #ffffff; padding: 25px; border-radius: 12px; border: 1px solid #e0e0e0;">
+        <h2 style="color: #d35400; border-bottom: 2px solid #d35400; padding-bottom: 10px;">5. Full Switch & Access Layer Configuration</h2>
+        
+        <h3>A. HQ Core Switch (Trunking & VLAN Creation)</h3>
+        <p>This switch acts as the backbone, connecting Floor 1, Floor 2, and the Core Router.</p>
+        <pre style="background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 8px; overflow-x: auto;">
+enable
+configure terminal
+hostname HQ-Core-SW
+
+# Create VLAN Database
+vlan 10
+ name Service
+vlan 20
+ name IT
+vlan 30
+ name Admin
+exit
+
+# Set Trunking on ports to Router (Fa0/1) and Floor Switches (Fa0/2-3)
+interface range fa0/1 - 3
+ switchport mode trunk
+ switchport trunk native vlan 1
+ no shutdown
+        </pre>
+
+        <h3>B. HQ Floor Switches (Floor 1 & 2 Access Ports)</h3>
+        <p>Run these commands on <strong>both</strong> Floor 1 and Floor 2 switches to assign users to their departments.</p>
+        <pre style="background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 8px; overflow-x: auto;">
+enable
+configure terminal
+# Create VLANs first so the switch recognizes them
+vlan 10
+vlan 20
+vlan 30
+exit
+
+# Assigning Service PCs (60 Hosts)
+interface range fa0/3 - 5
+ switchport mode access
+ switchport access vlan 10
+
+# Assigning IT-PCs (20 Hosts)
+interface range fa0/6 - 10
+ switchport mode access
+ switchport access vlan 20
+
+# Assigning Admin PCs (10 Hosts)
+interface range fa0/11 - 15
+ switchport mode access
+ switchport access vlan 30
+
+# Link back to Core Switch
+interface fa0/1
+ switchport mode trunk
+        </pre>
+
+        <h2 style="color: #2980b9; border-bottom: 2px solid #2980b9; padding-bottom: 10px; margin-top: 40px;">6. Final Network Verification Commands</h2>
+        <table style="width:100%; border-collapse:collapse; margin-top:15px;">
+            <tr style="background-color: #2980b9; color: white;">
+                <th style="padding: 10px; border: 1px solid #ddd;">Verification Task</th>
+                <th style="padding: 10px; border: 1px solid #ddd;">CLI Command</th>
+                <th style="padding: 10px; border: 1px solid #ddd;">Expected Result</th>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;">Check VLANs</td>
+                <td style="padding: 10px; border: 1px solid #ddd;"><code>show vlan brief</code></td>
+                <td style="padding: 10px; border: 1px solid #ddd;">All ports assigned to 10, 20, 30</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;">Check Trunking</td>
+                <td style="padding: 10px; border: 1px solid #ddd;"><code>show interface trunk</code></td>
+                <td style="padding: 10px; border: 1px solid #ddd;">Fa0/1 - Fa0/3 should be "trunking"</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;">Check DHCP on PC</td>
+                <td style="padding: 10px; border: 1px solid #ddd;"><code>ipconfig</code> (CMD)</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">Address from 192.168.10.x range</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;">Check DNS</td>
+                <td style="padding: 10px; border: 1px solid #ddd;"><code>nslookup puc.com</code></td>
+                <td style="padding: 10px; border: 1px solid #ddd;">Resolves to 192.168.11.3</td>
+            </tr>
+        </table>
+
+        <div style="margin-top: 20px; padding: 15px; background: #e8f4fd; border-left: 5px solid #3498db;">
+            <strong>💡 Presentation Note:</strong> During the live demo, show the <code>ip helper-address</code> on the router sub-interfaces. This is what allows the Broadcast DHCP packets to cross the router to the 192.168.11.2 server.
+        </div>
+    </div>
+</section>
+
+
+<section class="full-network-setup" style="margin-top: 40px; font-family: sans-serif;">
+    <div style="background: #ffffff; padding: 30px; border-radius: 12px; border: 1px solid #d1d1d1; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+        <h2 style="color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; text-transform: uppercase;">Core Network Infrastructure & Routing</h2>
+
+        <h3 style="color: #e67e22; margin-top: 25px;">1. HQ Core Router (Gateway & Routing)</h3>
+        <pre style="background: #1e1e1e; color: #dcdcdc; padding: 15px; border-radius: 6px; overflow-x: auto;">
+enable
+configure terminal
+hostname HQ-Core-Router
+interface gig0/0
+no shutdown
+interface gig0/0.10
+encapsulation dot1Q 10
+ip address 192.168.10.1 255.255.255.192
+ip helper-address 192.168.11.2
+interface gig0/0.20
+encapsulation dot1Q 20
+ip address 192.168.10.65 255.255.255.224
+ip helper-address 192.168.11.2
+interface gig0/0.30
+encapsulation dot1Q 30
+ip address 192.168.10.97 255.255.255.240
+ip helper-address 192.168.11.2
+exit
+interface Serial0/3/0
+ip address 200.200.200.1 255.255.255.252
+clock rate 64000
+no shutdown
+interface Serial0/3/1
+ip address 201.201.201.1 255.255.255.252
+no shutdown
+router ospf 1
+network 192.168.10.0 0.0.0.255 area 0
+network 200.200.200.0 0.0.0.3 area 0
+network 201.201.201.0 0.0.0.3 area 0
+router rip
+version 2
+network 192.168.10.0
+network 200.200.200.0
+network 201.201.201.0
+no auto-summary
+exit
+        </pre>
+
+        <h3 style="color: #e67e22;">2. Server Core Router</h3>
+        <pre style="background: #1e1e1e; color: #dcdcdc; padding: 15px; border-radius: 6px; overflow-x: auto;">
+enable
+configure terminal
+hostname Server-Core-Router
+interface gig0/0
+ip address 192.168.11.1 255.255.255.0
+no shutdown
+interface Serial0/3/0
+ip address 200.200.200.2 255.255.255.252
+no shutdown
+interface Serial0/3/1
+ip address 203.203.203.1 255.255.255.252
+no shutdown
+router ospf 1
+network 192.168.11.0 0.0.0.255 area 0
+network 200.200.200.0 0.0.0.3 area 0
+network 203.203.203.0 0.0.0.3 area 0
+router rip
+version 2
+network 192.168.11.0
+network 200.200.200.0
+network 203.203.203.0
+no auto-summary
+exit
+        </pre>
+
+        <h3 style="color: #e67e22;">3. ISP Router</h3>
+        <pre style="background: #1e1e1e; color: #dcdcdc; padding: 15px; border-radius: 6px; overflow-x: auto;">
+enable
+configure terminal
+hostname ISP-Router
+interface gig0/0
+ip address 192.168.13.1 255.255.255.0
+no shutdown
+interface Serial0/3/1
+ip address 201.201.201.2 255.255.255.252
+no shutdown
+interface Serial0/3/0
+ip address 202.202.202.1 255.255.255.252
+no shutdown
+router ospf 1
+network 201.201.201.0 0.0.0.3 area 0
+network 202.202.202.0 0.0.0.3 area 0
+network 192.168.13.0 0.0.0.255 area 0
+router rip
+version 2
+network 201.201.201.0
+network 202.202.202.0
+network 192.168.13.0
+no auto-summary
+exit
+        </pre>
+
+        <h3 style="color: #e67e22;">4. Branch (BR) Router</h3>
+        <pre style="background: #1e1e1e; color: #dcdcdc; padding: 15px; border-radius: 6px; overflow-x: auto;">
+enable
+configure terminal
+hostname Branch-Router
+interface gig0/0
+ip address 192.168.12.1 255.255.255.0
+no shutdown
+interface Serial0/3/0
+ip address 202.202.202.2 255.255.255.252
+no shutdown
+interface Serial0/3/1
+ip address 203.203.203.2 255.255.255.252
+no shutdown
+router ospf 1
+network 192.168.12.0 0.0.0.255 area 0
+network 202.202.202.0 0.0.0.3 area 0
+network 203.203.203.0 0.0.0.3 area 0
+router rip
+version 2
+network 192.168.12.0
+network 202.202.202.0
+network 203.203.203.0
+no auto-summary
+exit
+        </pre>
+
+        <h3 style="color: #2980b9;">5. Switching & VLANs (HQ & Branch)</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div>
+                <strong style="display:block; margin-bottom:5px;">HQ Core Switch</strong>
+                <pre style="background: #2c3e50; color: #ecf0f1; padding: 10px; border-radius: 4px; font-size: 0.85em;">
+vlan 10
+vlan 20
+vlan 30
+exit
+interface range fa0/1-3
+switchport mode trunk
+                </pre>
+            </div>
+            <div>
+                <strong style="display:block; margin-bottom:5px;">Branch Switch</strong>
+                <pre style="background: #2c3e50; color: #ecf0f1; padding: 10px; border-radius: 4px; font-size: 0.85em;">
+interface range fa0/2-10
+switchport mode access
+interface fa0/1
+switchport mode trunk
+                </pre>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="branch-setup" style="margin-top: 40px; font-family: 'Segoe UI', Tahoma, sans-serif;">
+    <div style="background: #ffffff; padding: 30px; border-radius: 12px; border: 1px solid #d1d1d1; border-top: 6px solid #8e44ad;">
+        <h2 style="color: #8e44ad; text-transform: uppercase; border-bottom: 2px solid #eee; padding-bottom: 10px;">8. Branch Office (BR) Full Setup</h2>
+        
+        <p>The Branch Office connects to the ISP and the Server Farm via Serial links, using <strong>192.168.12.0/24</strong> for its local user base. It relies on the HQ Server Farm for DHCP, DNS, and Email services.</p>
+
+        <h3 style="color: #2c3e50;">A. Branch Router CLI (Interfaces & DHCP Relay)</h3>
+        <pre style="background: #1e1e1e; color: #dcdcdc; padding: 15px; border-radius: 6px; overflow-x: auto;">
+enable
+configure terminal
+hostname Branch-Router
+
+# Local LAN Interface
+interface gig0/0
+ ip address 192.168.12.1 255.255.255.0
+ ip helper-address 192.168.11.2
+ no shutdown
+
+# Serial Link to ISP
+interface Serial0/3/0
+ ip address 202.202.202.2 255.255.255.252
+ no shutdown
+
+# Serial Link to Server Site
+interface Serial0/3/1
+ ip address 203.203.203.2 255.255.255.252
+ no shutdown
+
+# Dynamic Routing
+router ospf 1
+ network 192.168.12.0 0.0.0.255 area 0
+ network 202.202.202.0 0.0.0.3 area 0
+ network 203.203.203.0 0.0.0.3 area 0
+
+router rip
+ version 2
+ network 192.168.12.0
+ network 202.202.202.0
+ network 203.203.203.0
+ no auto-summary
+exit
+        </pre>
+
+        <h3 style="color: #2c3e50;">B. Branch Switch CLI (Access Layer)</h3>
+        <pre style="background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 6px; overflow-x: auto;">
+enable
+configure terminal
+hostname BR-Main-SW
+
+# Configure User Ports (fa0/2 to fa0/10)
+interface range fa0/2 - 10
+ switchport mode access
+ no shutdown
+
+# Uplink to Branch Router
+interface fa0/1
+ switchport mode trunk
+ no shutdown
+exit
+        </pre>
+
+        <h3 style="color: #2c3e50;">C. DHCP Server Pool (Added to 192.168.11.2)</h3>
+        <p>In the <strong>DHCP Server Services tab</strong>, add the following pool to support Branch users:</p>
+        <table style="width: 100%; border-collapse: collapse; background: #f9f9f9;">
+            <tr style="background: #8e44ad; color: white;">
+                <th style="padding: 10px; border: 1px solid #ddd;">Pool Name</th>
+                <th style="padding: 10px; border: 1px solid #ddd;">Default Gateway</th>
+                <th style="padding: 10px; border: 1px solid #ddd;">DNS Server</th>
+                <th style="padding: 10px; border: 1px solid #ddd;">Start IP</th>
+                <th style="padding: 10px; border: 1px solid #ddd;">Subnet Mask</th>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;"><strong>BR_Pool</strong></td>
+                <td style="padding: 10px; border: 1px solid #ddd;">192.168.12.1</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">192.168.11.4</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">192.168.12.2</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">255.255.255.0</td>
+            </tr>
+        </table>
+
+        <h3 style="color: #2c3e50;">D. Branch PC Configuration</h3>
+        <div style="background: #e8f4fd; padding: 15px; border-left: 5px solid #3498db; border-radius: 4px;">
+            <ol>
+                <li>Connect PCs to <strong>BR-Main-SW</strong> ports Fa0/2 through Fa0/10.</li>
+                <li>On the PC <strong>Desktop > IP Configuration</strong>, select <strong>DHCP</strong>.</li>
+                <li>Wait for "DHCP request successful" to see an IP from the <strong>192.168.12.x</strong> range.</li>
+                <li>Open the Web Browser and navigate to <strong>puc.com</strong> to verify cross-network DNS/HTTP access.</li>
+            </ol>
+        </div>
+    </div>
+</section>
+
+<section class="isp-internal-setup" style="margin-top: 40px; font-family: 'Segoe UI', sans-serif;">
+    <div style="background: #ffffff; padding: 30px; border-radius: 12px; border: 1px solid #d1d1d1; border-left: 6px solid #2980b9;">
+        <h2 style="color: #2980b9; text-transform: uppercase; border-bottom: 2px solid #eee; padding-bottom: 10px;">9. ISP Internal Floor Connection</h2>
+        
+        <p>Connectivity between the <strong>ISP Main Router</strong> and the <strong>ISP Floor Router</strong> via the 192.168.13.0/24 subnet.</p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+                <h4 style="color: #2c3e50;">ISP Main Router CLI</h4>
+                <pre style="background: #1e1e1e; color: #dcdcdc; padding: 15px; border-radius: 6px; font-size: 0.85em;">
+interface gig0/0
+ ip address 192.168.13.1 255.255.255.0
+ no shutdown
+router ospf 1
+ network 192.168.13.0 0.0.0.255 area 0
+router rip
+ version 2
+ network 192.168.13.0
+                </pre>
+            </div>
+            <div>
+                <h4 style="color: #2c3e50;">ISP Floor Router CLI</h4>
+                <pre style="background: #1e1e1e; color: #dcdcdc; padding: 15px; border-radius: 6px; font-size: 0.85em;">
+interface gig0/0
+ ip address 192.168.13.2 255.255.255.0
+ no shutdown
+router ospf 1
+ network 192.168.13.0 0.0.0.255 area 0
+router rip
+ version 2
+ network 192.168.13.0
+                </pre>
+            </div>
+        </div>
+
+        <div style="margin-top: 20px; padding: 15px; background: #f0f7ff; border-radius: 4px; border: 1px solid #3498db;">
+            <strong>Verification Command:</strong> Run <code>show ip route</code> on either router. You should see the other router's connected networks via <strong>O</strong> (OSPF) or <strong>R</strong> (RIP).
+        </div>
+    </div>
+</section>
+
+<section class="custom-acl" style="margin-top: 40px; font-family: 'Segoe UI', sans-serif;">
+    <div style="background: #ffffff; padding: 30px; border-radius: 12px; border: 1px solid #d1d1d1; border-top: 6px solid #e74c3c;">
+        <h2 style="color: #c0392b; text-transform: uppercase; border-bottom: 2px solid #eee; padding-bottom: 10px;">10. Security Implementation (Custom ACLs)</h2>
+        
+        <p>This section details the specific security policies implemented to control traffic between the HQ VLANs and the Branch Office (192.168.12.0/24).</p>
+
+        <h3 style="color: #2c3e50;">A. Standard ACL (VLAN 10 Restriction)</h3>
+        <p><em>Policy:</em> VLAN 10 is completely restricted from communicating with any Branch client.</p>
+        <pre style="background: #1e1e1e; color: #dcdcdc; padding: 15px; border-radius: 6px;">
+# Applied on Branch Router
+access-list 10 deny 192.168.10.0 0.0.0.63
+access-list 10 permit any
+interface gig0/0
+ ip access-group 10 out
+        </pre>
+
+        <h3 style="color: #2c3e50;">B. Extended ACL (VLAN 20 & 30 Traffic Control)</h3>
+        <p><em>Policy:</em> VLAN 20 (Ping Only) and VLAN 30 (Web Only).</p>
+        <pre style="background: #1e1e1e; color: #dcdcdc; padding: 15px; border-radius: 6px;">
+# Applied on HQ Core Router
+access-list 100 permit icmp 192.168.10.64 0.0.0.31 192.168.12.0 0.0.0.255
+access-list 100 deny tcp 192.168.10.64 0.0.0.31 192.168.12.0 0.0.0.255 eq 80
+access-list 100 deny icmp 192.168.10.96 0.0.0.15 192.168.12.0 0.0.0.255
+access-list 100 permit tcp 192.168.10.96 0.0.0.15 192.168.12.0 0.0.0.255 eq 80
+access-list 100 permit ip any any
+
+interface gig0/0.20
+ ip access-group 100 in
+interface gig0/0.30
+ ip access-group 100 in
+        </pre>
+
+        <h3 style="color: #2c3e50;">C. ACL Verification Matrix</h3>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 10px; text-align: center;">
+            <tr style="background: #c0392b; color: white;">
+                <th style="padding: 10px; border: 1px solid #ddd;">Source VLAN</th>
+                <th style="padding: 10px; border: 1px solid #ddd;">Action: PING</th>
+                <th style="padding: 10px; border: 1px solid #ddd;">Action: BROWSE</th>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;">VLAN 10 (Service)</td>
+                <td style="padding: 10px; border: 1px solid #ddd; color: red;">DENY</td>
+                <td style="padding: 10px; border: 1px solid #ddd; color: red;">DENY</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;">VLAN 20 (IT)</td>
+                <td style="padding: 10px; border: 1px solid #ddd; color: green;">PERMIT</td>
+                <td style="padding: 10px; border: 1px solid #ddd; color: red;">DENY</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;">VLAN 30 (Admin)</td>
+                <td style="padding: 10px; border: 1px solid #ddd; color: red;">DENY</td>
+                <td style="padding: 10px; border: 1px solid #ddd; color: green;">PERMIT</td>
+            </tr>
+        </table>
+    </div>
+</section>
+
+<section class="branch-server-setup" style="margin-top: 40px; font-family: 'Segoe UI', sans-serif;">
+    <div style="background: #ffffff; padding: 30px; border-radius: 12px; border: 1px solid #d1d1d1; border-top: 6px solid #27ae60;">
+        <h2 style="color: #27ae60; text-transform: uppercase; border-bottom: 2px solid #eee; padding-bottom: 10px;">11. Branch Web Server & DNS Setup</h2>
+        
+        <p>A dedicated server has been added to the Branch Network to test cross-site browsing and verify ACL traffic filtering policies.</p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
+                <h4 style="color: #2c3e50; margin-top: 0;">Branch Server (Static IP)</h4>
+                <ul style="list-style: none; padding: 0; line-height: 1.8;">
+                    <li><strong>IP Address:</strong> 192.168.12.50</li>
+                    <li><strong>Subnet Mask:</strong> 255.255.255.0</li>
+                    <li><strong>Default Gateway:</strong> 192.168.12.1</li>
+                    <li><strong>DNS Server:</strong> 192.168.11.4</li>
+                </ul>
+            </div>
+
+            <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
+                <h4 style="color: #2c3e50; margin-top: 0;">DNS Record (On 192.168.11.4)</h4>
+                <p>Add this record to the Central DNS Server to allow domain resolution:</p>
+                <code style="display: block; background: #eee; padding: 10px; border-radius: 4px; font-weight: bold;">
+                    Name: www.branch.com<br>
+                    Type: A Record<br>
+                    Address: 192.168.12.50
+                </code>
+            </div>
+        </div>
+
+        <h3 style="color: #2c3e50;">Verification of ACL Logic for Branch Server</h3>
+        <p>Use these steps to prove the Extended and Standard ACLs are working as intended:</p>
+        
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <tr style="background: #2c3e50; color: white;">
+                <th style="padding: 12px; border: 1px solid #ddd;">Source PC</th>
+                <th style="padding: 12px; border: 1px solid #ddd;">Test Action</th>
+                <th style="padding: 12px; border: 1px solid #ddd;">Target</th>
+                <th style="padding: 12px; border: 1px solid #ddd;">Expected Result</th>
+            </tr>
+            <tr>
+                <td style="padding: 12px; border: 1px solid #ddd;"><strong>VLAN 10</strong></td>
+                <td style="padding: 12px; border: 1px solid #ddd;">Any Access</td>
+                <td style="padding: 12px; border: 1px solid #ddd;">www.branch.com</td>
+                <td style="padding: 12px; border: 1px solid #ddd; color: #e74c3c; font-weight: bold;">FAILED (Standard ACL)</td>
+            </tr>
+            <tr>
+                <td style="padding: 12px; border: 1px solid #ddd;"><strong>VLAN 20</strong></td>
+                <td style="padding: 12px; border: 1px solid #ddd;">Ping</td>
+                <td style="padding: 12px; border: 1px solid #ddd;">192.168.12.50</td>
+                <td style="padding: 12px; border: 1px solid #ddd; color: #27ae60; font-weight: bold;">SUCCESS</td>
+            </tr>
+            <tr>
+                <td style="padding: 12px; border: 1px solid #ddd;"><strong>VLAN 20</strong></td>
+                <td style="padding: 12px; border: 1px solid #ddd;">Browse Web</td>
+                <td style="padding: 12px; border: 1px solid #ddd;">www.branch.com</td>
+                <td style="padding: 12px; border: 1px solid #ddd; color: #e74c3c; font-weight: bold;">TIMEOUT (Extended ACL)</td>
+            </tr>
+            <tr>
+                <td style="padding: 12px; border: 1px solid #ddd;"><strong>VLAN 30</strong></td>
+                <td style="padding: 12px; border: 1px solid #ddd;">Ping</td>
+                <td style="padding: 12px; border: 1px solid #ddd;">192.168.12.50</td>
+                <td style="padding: 12px; border: 1px solid #ddd; color: #e74c3c; font-weight: bold;">FAILED (Extended ACL)</td>
+            </tr>
+            <tr>
+                <td style="padding: 12px; border: 1px solid #ddd;"><strong>VLAN 30</strong></td>
+                <td style="padding: 12px; border: 1px solid #ddd;">Browse Web</td>
+                <td style="padding: 12px; border: 1px solid #ddd;">www.branch.com</td>
+                <td style="padding: 12px; border: 1px solid #ddd; color: #27ae60; font-weight: bold;">SUCCESS</td>
+            </tr>
+        </table>
+
+        <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-left: 5px solid #ffc107; border-radius: 4px;">
+            <strong>Pro Tip:</strong> If <code>www.branch.com</code> doesn't load for VLAN 30, ensure the Branch Router has a route back to the DNS Server (192.168.11.4) so the DNS query can be completed before the HTTP request begins.
+        </div>
+    </div>
+</section>
+
+</div>
+</body>
+</html>

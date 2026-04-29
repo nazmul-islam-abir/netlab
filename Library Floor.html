@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Branch 1 Network Topology Documentation</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 1000px; margin: 0 auto; padding: 20px; background-color: #f4f7f6; }
+        .container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; border-bottom: 2px solid #2c3e50; padding-bottom: 10px; text-align: center; }
+        h2 { color: #2980b9; border-left: 5px solid #2980b9; padding-left: 10px; margin-top: 30px; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #2980b9; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        code { background-color: #f8f8f8; border: 1px solid #ddd; padding: 2px 5px; border-radius: 3px; color: #e74c3c; font-family: 'Courier New', Courier, monospace; }
+        pre { background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 5px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; }
+        .highlight { color: #f1c40f; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Building 1: Topology Setup Guide</h1>
+
+    <div class="section">
+        <h2>1. VLSM Subnetting (Network: 192.168.11.0)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Section</th>
+                    <th>VLAN</th>
+                    <th>Subnet Address</th>
+                    <th>Subnet Mask</th>
+                    <th>Gateway</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Users PC</td><td>20</td><td>192.168.11.0 /26</td><td>255.255.255.192</td><td>192.168.11.1</td></tr>
+                <tr><td>Client PC</td><td>10</td><td>192.168.11.64 /27</td><td>255.255.255.224</td><td>192.168.11.65</td></tr>
+                <tr><td>Server Section</td><td>1 (Native)</td><td>192.168.11.96 /28</td><td>255.255.255.240</td><td>192.168.11.110</td></tr>
+                <tr><td>Admin PC</td><td>30</td><td>192.168.11.112 /28</td><td>255.255.255.240</td><td>192.168.11.113</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>2. Server Services Configuration</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Server Type</th>
+                    <th>IP Address</th>
+                    <th>Services Configuration</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>DNS Server</strong></td>
+                    <td>192.168.11.99</td>
+                    <td>A-Record: <code>www.b1.com</code> -> 192.168.11.98<br>A-Record: <code>mail.b1.com</code> -> 192.168.11.97</td>
+                </tr>
+                <tr>
+                    <td><strong>HTTP/HTTPS</strong></td>
+                    <td>192.168.11.98</td>
+                    <td>HTTP/HTTPS: ON. Edit index.html for web visibility.</td>
+                </tr>
+                <tr>
+                    <td><strong>Email + DHCP</strong></td>
+                    <td>192.168.11.97</td>
+                    <td><strong>Email:</strong> Domain: <code>b1.com</code>, Users: user1, client1, admin1.<br><strong>DHCP:</strong> Pools for VLAN 10, 20, 30.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>3. Main Router CLI Configuration</h2>
+        <pre>
+enable
+conf t
+hostname B1-Main-Router
+
+interface GigabitEthernet0/0
+ no shut
+exit
+
+interface GigabitEthernet0/0.10
+ encapsulation dot1Q 10
+ ip address 192.168.11.65 255.255.255.224
+ ip helper-address 192.168.11.97
+exit
+
+interface GigabitEthernet0/0.20
+ encapsulation dot1Q 20
+ ip address 192.168.11.1 255.255.255.192
+ ip helper-address 192.168.11.97
+exit
+
+interface GigabitEthernet0/0.30
+ encapsulation dot1Q 30
+ ip address 192.168.11.113 255.255.255.240
+ ip helper-address 192.168.11.97
+exit
+
+interface GigabitEthernet0/0.100
+ encapsulation dot1Q 1
+ ip address 192.168.11.110 255.255.255.240
+exit
+        </pre>
+    </div>
+
+    <div class="section">
+        <h2>4. Switch CLI Configurations</h2>
+        
+        <h3>Building 1 Main Switch</h3>
+        <pre>
+enable
+conf t
+vlan 10
+ name Clients
+vlan 20
+ name Users
+vlan 30
+ name Admin
+exit
+interface fa0/1
+ switchport mode trunk
+exit
+interface range fa0/2 - 3
+ switchport mode trunk
+exit
+        </pre>
+
+        <h3>Floor 1 Switch</h3>
+        <pre>
+enable
+conf t
+vlan 10
+vlan 20
+vlan 30
+exit
+interface range fa0/1 - 3
+ switchport mode trunk
+exit
+interface fa0/4
+ switchport mode access
+ switchport access vlan 10
+exit
+interface fa0/5
+ switchport mode access
+ switchport access vlan 20
+exit
+interface fa0/6
+ switchport mode access
+ switchport access vlan 30
+exit
+        </pre>
+
+        <h3>Floor 2 Switch</h3>
+        <pre>
+enable
+conf t
+vlan 10
+vlan 20
+vlan 30
+exit
+interface range fa0/1 - 2
+ switchport mode trunk
+exit
+interface fa0/3
+ switchport mode access
+ switchport access vlan 10
+exit
+interface fa0/4
+ switchport mode access
+ switchport access vlan 20
+exit
+interface fa0/5
+ switchport mode access
+ switchport access vlan 30
+exit
+        </pre>
+
+        <h3>Server Switch</h3>
+        <pre>
+enable
+conf t
+interface fa0/1
+ switchport mode trunk
+exit
+interface range fa0/2 - 4
+ switchport mode access
+ switchport access vlan 1
+exit
+        </pre>
+    </div>
+
+    <div class="section">
+        <h2>5. End-Device (PC) Configuration Summary</h2>
+        <ul>
+            <li><strong>IP Configuration:</strong> Set to <code>DHCP</code>.</li>
+            <li><strong>Email Client:</strong>
+                <ul>
+                    <li>In/Out Server: 192.168.11.97</li>
+                    <li>Domain: b1.com</li>
+                </ul>
+            </li>
+            <li><strong>Web Browser:</strong> Access via <code>www.b1.com</code>.</li>
+        </ul>
+    </div>
+</div>
+
+
+
+<div class="section">
+        <h2>6. Core & ISP Serial Connections</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Link Description</th>
+                    <th>Subnet</th>
+                    <th>Interface</th>
+                    <th>IP Address</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>B1 to Connection-Router</td><td>202.202.202.0/30</td><td>Se0/3/0</td><td>202.202.202.1</td></tr>
+                <tr><td>B1 to ISP-Router</td><td>203.203.203.0/30</td><td>Se0/3/1</td><td>203.203.203.1</td></tr>
+                <tr><td>B2 to Connection-Router</td><td>201.201.201.0/30</td><td>Se0/3/1</td><td>201.201.201.2</td></tr>
+                <tr><td>B2 to ISP-Router</td><td>200.200.200.0/30</td><td>Se0/3/0</td><td>200.200.200.2</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Building 1 Core Router (Serial Update)</h3>
+        <pre>
+conf t
+int se0/3/0
+ ip address 202.202.202.1 255.255.255.252
+ no shut
+exit
+int se0/3/1
+ ip address 203.203.203.1 255.255.255.252
+ no shut
+exit
+        </pre>
+
+        <h3>Connection Router (Full CLI)</h3>
+        <pre>
+enable
+conf t
+int se0/3/0
+ ip address 202.202.202.2 255.255.255.252
+ no shut
+exit
+int se0/3/1
+ ip address 201.201.201.1 255.255.255.252
+ no shut
+exit
+router ospf 1
+ network 202.202.202.0 0.0.0.3 area 0
+ network 201.201.201.0 0.0.0.3 area 0
+exit
+router rip
+ version 2
+ network 202.202.202.0
+ network 201.201.201.0
+exit
+        </pre>
+
+        <h3>ISP Router (Full CLI)</h3>
+        <pre>
+enable
+conf t
+int se0/3/1
+ ip address 203.203.203.2 255.255.255.252
+ no shut
+exit
+int se0/3/0
+ ip address 200.200.200.1 255.255.255.252
+ no shut
+exit
+router ospf 1
+ network 203.203.203.0 0.0.0.3 area 0
+ network 200.200.200.0 0.0.0.3 area 0
+exit
+router rip
+ version 2
+ network 203.203.203.0
+ network 200.200.200.0
+exit
+        </pre>
+    </div>
+
+    <div class="section">
+        <h2>7. Building 2 Branch Topology (SR PCs)</h2>
+        <p><strong>Network:</strong> 192.168.10.0 /24 | <strong>Gateway:</strong> 192.168.10.1</p>
+
+        <h3>Building 2 Router CLI</h3>
+        <pre>
+enable
+conf t
+int gi0/0
+ ip address 192.168.10.1 255.255.255.0
+ ip helper-address 192.168.11.97
+ no shut
+exit
+int se0/3/1
+ ip address 201.201.201.2 255.255.255.252
+ no shut
+exit
+int se0/3/0
+ ip address 200.200.200.2 255.255.255.252
+ no shut
+exit
+router ospf 1
+ network 192.168.10.0 0.0.0.255 area 0
+ network 201.201.201.0 0.0.0.3 area 0
+ network 200.200.200.0 0.0.0.3 area 0
+exit
+router rip
+ version 2
+ network 192.168.10.0
+ network 201.201.201.0
+ network 200.200.200.0
+exit
+        </pre>
+
+        <h3>Building 2 Switch (B2-SW) CLI</h3>
+        <pre>
+enable
+conf t
+vlan 1
+exit
+int fa0/1
+ switchport mode trunk
+exit
+int range fa0/2 - 10
+ switchport mode access
+ switchport access vlan 1
+exit
+        </pre>
+    </div>
+
+    <div class="section">
+        <h2>8. Dynamic Routing (OSPF & RIPv2)</h2>
+        <p>Configured on all routers for redundancy between Building 1 and Building 2.</p>
+        <pre>
+# Building 1 Router Dynamic Update
+router ospf 1
+ network 192.168.11.0 0.0.0.255 area 0
+ network 202.202.202.0 0.0.0.3 area 0
+ network 203.203.203.0 0.0.0.3 area 0
+exit
+router rip
+ version 2
+ network 192.168.11.0
+ network 202.202.202.0
+ network 203.203.203.0
+exit
+        </pre>
+    </div>
+
+
+    <div class="section">
+        <h2>9. Application Layer Connectivity: Building 2 (SR)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Service</th>
+                    <th>Configuration / Target</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Web Browsing</strong></td>
+                    <td>URL: <code>www.b1.com</code> (Resolves to 192.168.11.98)</td>
+                    <td style="color:green;">✅ OPERATIONAL</td>
+                </tr>
+                <tr>
+                    <td><strong>DNS Lookup</strong></td>
+                    <td>Server: <code>192.168.11.99</code> (Cross-Router Query)</td>
+                    <td style="color:green;">✅ OPERATIONAL</td>
+                </tr>
+                <tr>
+                    <td><strong>Email (SMTP/POP3)</strong></td>
+                    <td>Server: <code>192.168.11.97</code> | Domain: <code>b1.com</code></td>
+                    <td style="color:green;">✅ OPERATIONAL</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Verification Commands for Connectivity</h3>
+        <pre>
+# Run these on Building 2 Router to verify path to servers
+ping 192.168.11.97
+ping 192.168.11.98
+ping 192.168.11.99
+
+# Run on SR PC Command Prompt
+nslookup www.b1.com
+        </pre>
+    </div>
+
+
+
+    <div class="section">
+        <h2>12. ACL Definitions and Logic</h2>
+        <p>Access Control Lists (ACLs) are used to filter network traffic based on a set of rules. In this topology, we used two specific types:</p>
+        
+        <ul>
+            <li><strong>Standard ACL:</strong> Filters traffic based <em>only</em> on the Source IP address. It is typically applied as close to the destination as possible. 
+                <br><em>Usage:</em> Used here to completely block VLAN 10 from reaching Building 2.</li>
+            
+            <li><strong>Extended ACL:</strong> Filters traffic based on Source IP, Destination IP, Protocol (TCP/UDP/ICMP), and Port Numbers (80, 443, etc.). It is applied as close to the source as possible.
+                <br><em>Usage:</em> Used here to create different rules for Ping (ICMP) and Web Browsing (HTTP) for VLAN 20 and VLAN 30.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>13. Final Security CLI (Building 1 Core Router)</h2>
+        <p>Ensure you are in <code>Global Configuration Mode</code> (conf t) before pasting this code. Comments (#) have been removed to prevent CLI errors.</p>
+        
+        <pre>
+enable
+conf t
+
+access-list 10 deny 192.168.11.64 0.0.0.31
+access-list 10 permit any
+
+access-list 120 permit icmp 192.168.11.0 0.0.0.63 192.168.10.0 0.0.0.255
+access-list 120 deny tcp 192.168.11.0 0.0.0.63 192.168.10.0 0.0.0.255 eq 80
+access-list 120 deny tcp 192.168.11.0 0.0.0.63 192.168.10.0 0.0.0.255 eq 443
+access-list 120 deny icmp 192.168.11.112 0.0.0.15 192.168.10.0 0.0.0.255
+access-list 120 permit tcp 192.168.11.112 0.0.0.15 192.168.10.0 0.0.0.255 eq 80
+access-list 120 permit tcp 192.168.11.112 0.0.0.15 192.168.10.0 0.0.0.255 eq 443
+access-list 120 permit ip any any
+
+interface GigabitEthernet0/0.10
+ ip access-group 10 in
+exit
+
+interface GigabitEthernet0/0.20
+ ip access-group 120 in
+exit
+
+interface GigabitEthernet0/0.30
+ ip access-group 120 in
+exit
+
+do write
+        </pre>
+    </div>
+
+    <div class="section">
+        <h2>14. ACL Verification Results</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Source Subnet</th>
+                    <th>Destination</th>
+                    <th>Test Type</th>
+                    <th>Expected Result</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>VLAN 10 (11.64)</td>
+                    <td>192.168.10.0</td>
+                    <td>Ping/Browse</td>
+                    <td style="color:red;">❌ DENIED (Standard ACL)</td>
+                </tr>
+                <tr>
+                    <td>VLAN 20 (11.0)</td>
+                    <td>192.168.10.0</td>
+                    <td>Ping (ICMP)</td>
+                    <td style="color:green;">✅ PERMITTED</td>
+                </tr>
+                <tr>
+                    <td>VLAN 20 (11.0)</td>
+                    <td>192.168.10.0</td>
+                    <td>Web (HTTP)</td>
+                    <td style="color:red;">❌ DENIED</td>
+                </tr>
+                <tr>
+                    <td>VLAN 30 (11.112)</td>
+                    <td>192.168.10.0</td>
+                    <td>Ping (ICMP)</td>
+                    <td style="color:red;">❌ DENIED</td>
+                </tr>
+                <tr>
+                    <td>VLAN 30 (11.112)</td>
+                    <td>192.168.10.0</td>
+                    <td>Web (HTTP)</td>
+                    <td style="color:green;">✅ PERMITTED</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+
+    <div class="section">
+    <h2>16. Full Topology Integrated Logic</h2>
+    <p>This section documents the end-to-end workflow of how the different branches and services interact across the entire network.</p>
+
+    <h3>A. The Routing Engine (Redundancy Logic)</h3>
+    <ul>
+        <li><strong>Primary Path (OSPF):</strong> Used for high-speed routing between Building 1 and Building 2 via the Connection Router.</li>
+        <li><strong>Secondary Path (RIPv2):</strong> Acts as a floating backup through the ISP Router. If the Serial 0/3/0 link on Building 1 fails, the network automatically reroutes all traffic through Serial 0/3/1.</li>
+    </ul>
+
+    <h3>B. Centralized Service Management</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Service Type</th>
+                <th>Logic & Location</th>
+                <th>Execution Process</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>DHCP Relay</strong></td>
+                <td>Server in B1 (192.168.11.97)</td>
+                <td>Routers use <code>ip helper-address</code> to forward local broadcasts across the Serial core to the server.</td>
+            </tr>
+            <tr>
+                <td><strong>Global DNS</strong></td>
+                <td>Server in B1 (192.168.11.99)</td>
+                <td>Building 2 PCs query B1 via the OSPF path to resolve names like <code>www.b1.com</code> and <code>www.b2.com</code>.</td>
+            </tr>
+            <tr>
+                <td><strong>Cross-Branch Web</strong></td>
+                <td>Servers in B1 & B2</td>
+                <td>HTTP traffic is permitted or denied based on the source VLAN using the Core Router's ACL 120.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>C. Security Enforcement (ACL Logic)</h3>
+    <pre>
+    1. VLAN 10 (Clients): Blocked at the source gateway from entering the core toward Building 2.
+    2. VLAN 20 (Users): Allowed to PING Building 2 (ICMP permitted), but HTTP/HTTPS ports (80/443) are filtered out.
+    3. VLAN 30 (Admin): Forbidden from PINGING (ICMP denied) to maintain stealth, but allowed full Web Access to the Building 2 Server.
+    </pre>
+
+    <h3>D. Full Verification Script (CLI Proof)</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Verification Step</th>
+                <th>Command / Action</th>
+                <th>Expected Result</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Routing Table</strong></td>
+                <td><code>show ip route</code></td>
+                <td>Routes marked with 'O' and 'R' for both 192.168.10.0 and 192.168.11.0.</td>
+            </tr>
+            <tr>
+                <td><strong>DHCP Success</strong></td>
+                <td><code>ipconfig /all</code> (SR PC)</td>
+                <td>IP: 192.168.10.x | Gateway: 192.168.10.1 | DNS: 192.168.11.99.</td>
+            </tr>
+            <tr>
+                <td><strong>DNS Resolution</strong></td>
+                <td>Browse <code>www.b2.com</code></td>
+                <td>Successful page load from the Building 2 Local Server.</td>
+            </tr>
+            <tr>
+                <td><strong>ACL Interception</strong></td>
+                <td>VLAN 30 Ping B2</td>
+                <td>"Destination host unreachable" or "Packet denied by ACL".</td>
+            </tr>
+            <tr>
+                <td><strong>Email Sync</strong></td>
+                <td>Email Client App</td>
+                <td>Successful SMTP send and POP3 receive between <code>sr1@b1.com</code> and <code>admin1@b1.com</code>.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div style="background-color: #eef; border-left: 5px solid #3498db; padding: 15px; margin-top: 20px;">
+        <strong>Project Summary:</strong> This topology demonstrates a high-availability enterprise network. It utilizes <strong>Layer 3 Redundancy</strong> (OSPF/RIP), <strong>Layer 2 Segmentation</strong> (VLANs), and <strong>Application Layer Integrity</strong> (Centralized DNS/Email) while maintaining <strong>Zero-Trust Security</strong> through granular ACL filtering at the network boundary.
+    </div>
+</div>
+
+<div class="section">
+        <h2>17. Cross-Building Browsing Logic</h2>
+        <p>This explains the process of a PC in Building 2 (SR) accessing a Web Server in Building 1, and vice versa.</p>
+        
+        <div style="background:#f9f9f9; padding:15px; border-radius:5px;">
+            <h3>Step-by-Step Request Path:</h3>
+            <ol>
+                <li><strong>PC Request:</strong> User types <code>www.b1.com</code> in the browser.</li>
+                <li><strong>DNS Resolution:</strong> PC asks DNS Server (192.168.11.99) for the IP. The request travels over <strong>OSPF</strong> serial links.</li>
+                <li><strong>HTTP Handshake:</strong> Once the PC gets the IP (192.168.11.98), it opens a TCP connection on <strong>Port 80</strong>.</li>
+                <li><strong>ACL Check:</strong> The Core Router checks <strong>ACL 120</strong>. If the PC is in VLAN 30, it is <code>PERMITTED</code>. If in VLAN 20, it is <code>DENIED</code>.</li>
+            </ol>
+        </div>
+
+        <h3>Building 2 Local Server Setup</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Setting</th>
+                    <th>Value</th>
+                    <th>Reason</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>IP Address</td><td>192.168.10.250</td><td>Static IP for reliability.</td></tr>
+                <tr><td>Subnet Mask</td><td>255.255.255.0</td><td>Standard Class C.</td></tr>
+                <tr><td>Default Gateway</td><td>192.168.10.1</td><td>To reach Building 1.</td></tr>
+                <tr><td>DNS Server</td><td>192.168.11.99</td><td>To resolve global names.</td></tr>
+                <tr><td>HTTP Service</td><td>ON</td><td>Enables Port 80 (Browsing).</td></tr>
+                <tr><td>HTTPS Service</td><td>ON</td><td>Enables Port 443 (Secure Browsing).</td></tr>
+            </tbody>
+        </table>
+    </div>
+<div class="section">
+        <h2>18. NAT Overload (PAT) Configuration</h2>
+        <p>To simulate real-world internet connectivity, <strong>NAT Overload</strong> is configured on the edge routers. Internal private IPs are translated to Public Serial IPs when communicating with the ISP.</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Internal Subnet</th>
+                    <th>Public Interface (NAT Outside)</th>
+                    <th>Public IP Mapping</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>192.168.11.0 (B1 VLANs)</td><td>Serial 0/3/1</td><td>203.203.203.1</td></tr>
+                <tr><td>192.168.10.0 (B2 SR)</td><td>Serial 0/3/0</td><td>200.200.200.2</td></tr>
+            </tbody>
+        </table>
+
+        <h3>NAT Verification CLI</h3>
+        <pre>
+# Check active translations while pinging ISP
+show ip nat translations
+
+# Check NAT statistics
+show ip nat statistics
+
+# Clear translations if needed
+clear ip nat translation *
+        </pre>
+
+        <div style="background-color: #fff3cd; border-left: 5px solid #ffc107; padding: 10px;">
+            <strong>Note:</strong> NAT happens <em>after</em> the routing decision. If OSPF/RIP finds the path to the ISP, the router then replaces the Source IP header with its own Serial IP before sending the packet to the ISP.
+        </div>
+    </div>
+
+</body>
+</html>

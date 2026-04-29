@@ -1,0 +1,1076 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Network Topology Setup - samanta.html</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 15mm;
+            background-color: #f4f7f6;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f7f6;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #2c3e50;
+            padding-bottom: 10px;
+            text-align: center;
+        }
+        h2 {
+            color: #2980b9;
+            margin-top: 30px;
+            border-left: 5px solid #2980b9;
+            padding-left: 10px;
+        }
+        h3 {
+            color: #d35400;
+            margin-top: 20px;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #2980b9;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        code {
+            background-color: #272822;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            display: block;
+            white-space: pre;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            line-height: 1.4;
+            margin: 10px 0;
+            font-size: 10pt;
+        }
+        .note {
+            background-color: #fff3cd;
+            border-left: 5px solid #ffeeba;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Network Configuration Manual (samanta.html)</h1>
+    <p><strong>Project:</strong> Full Administration Network Setup (VLSM + Application Services)</p>
+
+    <div class="section">
+        <h2>1. IP Planning Table (VLSM)</h2>
+        <p>Based on 192.168.10.0 range for ~32 PCs per VLAN.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Subnet/VLAN</th>
+                    <th>Network ID</th>
+                    <th>Subnet Mask</th>
+                    <th>Gateway (Router)</th>
+                    <th>Usable Range</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>VLAN 10 (IT)</td>
+                    <td>192.168.10.0/26</td>
+                    <td>255.255.255.192</td>
+                    <td>192.168.10.1</td>
+                    <td>.2 - .62</td>
+                </tr>
+                <tr>
+                    <td>VLAN 20 (ADMIN)</td>
+                    <td>192.168.10.64/26</td>
+                    <td>255.255.255.192</td>
+                    <td>192.168.10.65</td>
+                    <td>.66 - .126</td>
+                </tr>
+                <tr>
+                    <td>VLAN 30 (SR)</td>
+                    <td>192.168.10.128/26</td>
+                    <td>255.255.255.192</td>
+                    <td>192.168.10.129</td>
+                    <td>.130 - .190</td>
+                </tr>
+                <tr>
+                    <td>Server Subnet</td>
+                    <td>192.168.10.192/28</td>
+                    <td>255.255.255.240</td>
+                    <td>192.168.10.193</td>
+                    <td>.194 - .206</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>2. Administration Router CLI Setup</h2>
+        <code>enable
+conf t
+hostname Admin_Router
+
+interface GigabitEthernet0/0
+ no shut
+exit
+
+interface GigabitEthernet0/0.10
+ encapsulation dot1Q 10
+ ip address 192.168.10.1 255.255.255.192
+ ip helper-address 192.168.10.194
+exit
+
+interface GigabitEthernet0/0.20
+ encapsulation dot1Q 20
+ ip address 192.168.10.65 255.255.255.192
+ ip helper-address 192.168.10.194
+exit
+
+interface GigabitEthernet0/0.30
+ encapsulation dot1Q 30
+ ip address 192.168.10.129 255.255.255.192
+ ip helper-address 192.168.10.194
+exit
+
+interface GigabitEthernet0/0.100
+ encapsulation dot1Q 100
+ ip address 192.168.10.193 255.255.255.240
+exit
+do write</code>
+    </div>
+
+    <div class="section">
+        <h2>3. Switch Configurations</h2>
+        <h3>Administration Switch (Core)</h3>
+        <code>enable
+conf t
+vlan 10
+vlan 20
+vlan 30
+vlan 100
+exit
+interface range fastEthernet 0/1 - 4
+ switchport mode trunk
+exit</code>
+
+        <h3>Floor 1 & 2 Switches</h3>
+        <code>enable
+conf t
+vlan 10
+vlan 20
+vlan 30
+exit
+interface fastEthernet 0/1
+ switchport mode trunk
+exit
+interface fastEthernet 0/3
+ switchport access vlan 10
+interface fastEthernet 0/4
+ switchport access vlan 20
+interface fastEthernet 0/5
+ switchport access vlan 30</code>
+    </div>
+
+    <div class="section">
+        <h2>4. DHCP Server Manual Configuration (Server: 192.168.10.194)</h2>
+        <div class="note">
+            <strong>Server Static IP:</strong> 192.168.10.194 | 255.255.255.240 | GW: 192.168.10.193
+        </div>
+        <table>
+            <tr>
+                <th>Pool Name</th>
+                <th>Gateway</th>
+                <th>DNS Server</th>
+                <th>Start IP</th>
+                <th>Subnet Mask</th>
+            </tr>
+            <tr>
+                <td>VLAN10_IT</td>
+                <td>192.168.10.1</td>
+                <td>192.168.10.196</td>
+                <td>192.168.10.2</td>
+                <td>255.255.255.192</td>
+            </tr>
+            <tr>
+                <td>VLAN20_ADMIN</td>
+                <td>192.168.10.65</td>
+                <td>192.168.10.196</td>
+                <td>192.168.10.66</td>
+                <td>255.255.255.192</td>
+            </tr>
+            <tr>
+                <td>VLAN30_SR</td>
+                <td>192.168.10.129</td>
+                <td>192.168.10.196</td>
+                <td>192.168.10.130</td>
+                <td>255.255.255.192</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>5. Application Services (DNS, Email, HTTP)</h2>
+        <h3>DNS Records (Server: 192.168.10.196)</h3>
+        <table>
+            <tr>
+                <th>Domain Name</th>
+                <th>Record Type</th>
+                <th>IP Address</th>
+            </tr>
+            <tr>
+                <td>www.admin.com</td>
+                <td>A Record</td>
+                <td>192.168.10.195</td>
+            </tr>
+            <tr>
+                <td>mail.admin.com</td>
+                <td>A Record</td>
+                <td>192.168.10.194</td>
+            </tr>
+        </table>
+
+        <h3>Email Server (mail.admin.com)</h3>
+        <p>Service: SMTP (ON), POP3 (ON). Domain: admin.com. Users: user1, user2 (Pass: 123).</p>
+
+        <h3>HTTP/HTTPS Web Service (192.168.10.195)</h3>
+        <p>Edit index.html: <code>&lt;h1&gt;Welcome to Administration Portal&lt;/h1&gt;</code></p>
+    </div>
+
+    <div class="section">
+        <h2>6. PC Email Client Setup</h2>
+        <code>Your Name: Staff 1
+Email Address: user1@admin.com
+Incoming/Outgoing Server: mail.admin.com
+Username: user1
+Password: 123</code>
+    </div>
+
+
+    # samanta.html - Updated Server and Email Section
+<div class="section">
+    <h2>7. Detailed Server Configuration</h2>
+    <p>All servers are located in the 192.168.10.192/28 subnet (VLAN 100).</p>
+    
+    <h3>A. DHCP & Email Server</h3>
+    <ul>
+        <li><strong>Static IP:</strong> 192.168.10.194</li>
+        <li><strong>Subnet Mask:</strong> 255.255.255.240</li>
+        <li><strong>Default Gateway:</strong> 192.168.10.193</li>
+        <li><strong>Email Services:</strong> Domain: admin.com | SMTP & POP3: ON</li>
+    </ul>
+
+    <h3>B. HTTPS Web Server</h3>
+    <ul>
+        <li><strong>Static IP:</strong> 192.168.10.195</li>
+        <li><strong>Subnet Mask:</strong> 255.255.255.240</li>
+        <li><strong>Default Gateway:</strong> 192.168.10.193</li>
+        <li><strong>HTTP/HTTPS:</strong> ON</li>
+    </ul>
+
+    <h3>C. DNS Server</h3>
+    <ul>
+        <li><strong>Static IP:</strong> 192.168.10.196</li>
+        <li><strong>Subnet Mask:</strong> 255.255.255.240</li>
+        <li><strong>Default Gateway:</strong> 192.168.10.193</li>
+        <li><strong>A Records:</strong> www.admin.com -> 192.168.10.195 | mail.admin.com -> 192.168.10.194</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>8. PC Email Client Setup</h2>
+    <p>Configure each PC under <strong>Desktop > Email</strong> using these credentials:</p>
+    <table>
+        <tr>
+            <th>Field</th>
+            <th>Configuration Value</th>
+        </tr>
+        <tr>
+            <td><strong>Your Name</strong></td>
+            <td>User Name (e.g., Staff1)</td>
+        </tr>
+        <tr>
+            <td><strong>Email Address</strong></td>
+            <td>staff1@admin.com</td>
+        </tr>
+        <tr>
+            <td><strong>Incoming Mail Server</strong></td>
+            <td>mail.admin.com</td>
+        </tr>
+        <tr>
+            <td><strong>Outgoing Mail Server</strong></td>
+            <td>mail.admin.com</td>
+        </tr>
+        <tr>
+            <td><strong>User Name</strong></td>
+            <td>staff1</td>
+        </tr>
+        <tr>
+            <td><strong>Password</strong></td>
+            <td>123</td>
+        </tr>
+    </table>
+</div>
+
+<div class="section">
+    <h2>9. Core Routing Protocol Configuration (OSPF & RIP)</h2>
+    <p>Both OSPF and RIP are configured on all interfaces to ensure complete redundancy and protocol synchronization across the core network.</p>
+
+    <h3>A. Administration Router - Combined Setup</h3>
+    <code>enable
+conf t
+! --- OSPF Setup (Wildcard masks for VLSM) ---
+router ospf 1
+ network 192.168.10.0 0.0.0.63 area 0
+ network 192.168.10.64 0.0.0.63 area 0
+ network 192.168.10.128 0.0.0.63 area 0
+ network 192.168.10.192 0.0.0.15 area 0
+ network 200.200.200.0 0.0.0.3 area 0
+ network 202.202.202.0 0.0.0.3 area 0
+exit
+! --- RIP Setup ---
+router rip
+ version 2
+ network 192.168.10.0
+ network 200.200.200.0
+ network 202.202.202.0
+ no auto-summary
+exit</code>
+
+    <h3>B. Student Core Router - Combined Setup</h3>
+    <code>enable
+conf t
+router ospf 1
+ network 192.168.11.0 0.0.0.255 area 0
+ network 201.201.201.0 0.0.0.3 area 0
+ network 202.202.202.0 0.0.0.3 area 0
+exit
+router rip
+ version 2
+ network 192.168.11.0
+ network 201.201.201.0
+ network 202.202.202.0
+ no auto-summary
+exit</code>
+
+    <h3>C. ISP Router - Combined Setup</h3>
+    <code>enable
+conf t
+router ospf 1
+ network 200.200.200.0 0.0.0.3 area 0
+ network 201.201.201.0 0.0.0.3 area 0
+exit
+router rip
+ version 2
+ network 200.200.200.0
+ network 201.201.201.0
+ no auto-summary
+exit</code>
+</div>
+
+<div class="section">
+    <h2>10. Routing Verification & Testing</h2>
+    <p>To verify that the routing protocols are exchanging information correctly, use the following command on any core router:</p>
+    <code>show ip route</code>
+    
+    <div class="note">
+        <strong>How to read the Routing Table:</strong>
+        <ul>
+            <li><strong>Routes marked with <span style="color:#d35400; font-weight:bold;">O</span></strong>: These are learned via <strong>OSPF</strong> (Admin Distance: 110).</li>
+            <li><strong>Routes marked with <span style="color:#2980b9; font-weight:bold;">R</span></strong>: These are learned via <strong>RIP</strong> (Admin Distance: 120).</li>
+        </ul>
+        <em>Note: If both protocols are active for the same destination, the router will prefer the OSPF route due to its lower Administrative Distance.</em>
+    </div>
+</div>
+
+<div class="section">
+    <h2>11. Cross-Branch Service Integration & Student Setup</h2>
+    <p>Ensuring the Student Branch (192.168.11.0) utilizes central services located in the Administration Branch.</p>
+    
+    <h3>A. Student DHCP Relay Setup</h3>
+    <p>Run this on the Student Core Router to forward requests to the Admin DHCP Server:</p>
+    <code>interface GigabitEthernet0/0
+ ip helper-address 192.168.10.194</code>
+
+    <h3>B. Manual DHCP Pool (On Admin Server: 192.168.10.194)</h3>
+    <p>Add this pool in <strong>Services > DHCP</strong> to provide IPs to the student branch:</p>
+    <table>
+        <tr>
+            <th>Pool Name</th>
+            <th>Default Gateway</th>
+            <th>DNS Server</th>
+            <th>Start IP</th>
+            <th>Subnet Mask</th>
+        </tr>
+        <tr style="background-color: #eef7fd;">
+            <td><strong>Student_Pool</strong></td>
+            <td>192.168.11.1</td>
+            <td>192.168.10.196</td>
+            <td>192.168.11.2</td>
+            <td>255.255.255.0</td>
+        </tr>
+    </table>
+
+    <h3>C. Student Email Account (On Admin Server: 192.168.10.194)</h3>
+    <p>In <strong>Services > Email</strong>, ensure the domain <strong>admin.com</strong> is set and add:</p>
+    <ul>
+        <li><strong>User:</strong> student1</li>
+        <li><strong>Password:</strong> 123</li>
+    </ul>
+
+    <h3>D. Student PC Email Configuration</h3>
+    <p>Apply these settings on the Student PC under <strong>Desktop > Email</strong>:</p>
+    <table>
+        <tr>
+            <th>Field</th>
+            <th>Value</th>
+        </tr>
+        <tr>
+            <td><strong>Your Name</strong></td>
+            <td>Student One</td>
+        </tr>
+        <tr>
+            <td><strong>Email Address</strong></td>
+            <td>student1@admin.com</td>
+        </tr>
+        <tr>
+            <td><strong>Incoming Mail Server</strong></td>
+            <td>192.168.10.194</td>
+        </tr>
+        <tr>
+            <td><strong>Outgoing Mail Server</strong></td>
+            <td>192.168.10.194</td>
+        </tr>
+        <tr>
+            <td><strong>User Name</strong></td>
+            <td>student1</td>
+        </tr>
+        <tr>
+            <td><strong>Password</strong></td>
+            <td>123</td>
+        </tr>
+    </table>
+    
+    <div class="note">
+        <strong>Cross-Branch Verification:</strong> 
+        1. Click 'Receive' on Student PC to sync with the Admin server. 
+        2. Use <code>show ip route</code> to ensure Student Router sees the Server network via <span style="color:#d35400;">OSPF (O)</span> or <span style="color:#2980b9;">RIP (R)</span>.
+    </div>
+</div>
+
+<div class="section">
+    <h2>12. Network Address Translation (NAT/PAT) Implementation</h2>
+    
+    <h3>A. What is NAT and How Does it Work?</h3>
+    <p>
+        <strong>Network Address Translation (NAT)</strong> is a method used to remap one IP address space into another by modifying network address information in the IP header of packets while they are in transit across a traffic routing device. 
+    </p>
+    <p>
+        In this topology, we use <strong>PAT (Port Address Translation)</strong>, often called NAT Overload. It allows multiple devices in your private internal networks (192.168.10.0 and 192.168.11.0) to share a single public-facing Serial IP address. The router tracks these connections using unique port numbers, ensuring that returning traffic from the ISP reaches the correct internal PC.
+    </p>
+
+    <h3>B. Full CLI Configuration Setup</h3>
+    <p>We use <strong>Extended ACLs</strong> to ensure NAT only triggers for ISP traffic and ignores internal branch-to-branch traffic.</p>
+
+    <h4>1. Administration Router Setup</h4>
+    <code>! Define ACL: Deny NAT for Student Branch, Permit for everything else
+access-list 100 deny ip 192.168.10.0 0.0.0.255 192.168.11.0 0.0.0.255
+access-list 100 permit ip 192.168.10.0 0.0.0.255 any
+
+! Assign NAT Roles to Interfaces
+interface range gig0/0.10 - 100
+ ip nat inside
+exit
+interface Serial0/3/0
+ ip nat outside
+exit
+interface Serial0/3/1
+ ip nat outside
+exit
+
+! Enable PAT on both Serial exits
+ip nat inside source list 100 interface Serial0/3/0 overload
+ip nat inside source list 100 interface Serial0/3/1 overload</code>
+
+    <h4>2. Student Core Router Setup</h4>
+    <code>! Define ACL: Deny NAT for Admin Branch, Permit for everything else
+access-list 100 deny ip 192.168.11.0 0.0.0.255 192.168.10.0 0.0.0.255
+access-list 100 permit ip 192.168.11.0 0.0.0.255 any
+
+! Assign NAT Roles
+interface gig0/0
+ ip nat inside
+exit
+interface Serial0/3/0
+ ip nat outside
+exit
+interface Serial0/3/1
+ ip nat outside
+exit
+
+! Enable PAT
+ip nat inside source list 100 interface Serial0/3/0 overload
+ip nat inside source list 100 interface Serial0/3/1 overload</code>
+
+    <h3>C. Why and Where NAT was Added</h3>
+    <p>
+        <strong>Where:</strong> NAT was added at the <strong>Border Routers</strong> (Administration and Student Routers). Specifically, it sits between the internal Gigabit sub-interfaces and the external Serial connections.
+    </p>
+    <p>
+        <strong>Why:</strong> 
+        1. <strong>IP Conservation:</strong> It allows hundreds of student and staff PCs to access the ISP using only 2 or 3 public IPs.
+        2. <strong>Security:</strong> It hides the internal IP structure (VLANs) from the ISP router.
+        3. <strong>Service Integrity:</strong> By using the <code>deny</code> statement for internal traffic, we ensure that DHCP and Email packets keep their original source IPs, which is required for the servers to identify the users correctly.
+    </p>
+
+    <h3>D. Overall Operational Details</h3>
+    <p>
+        When an Administration PC pings the ISP (200.200.200.2), the router sees the packet exiting a <code>nat outside</code> port. It checks ACL 100, sees a "permit," and changes the Source IP to 200.200.200.1. 
+    </p>
+    
+    <p>
+        However, when that same PC sends an email to the Student branch, the router sees a "deny" in ACL 100 for that destination. It sends the packet using <strong>OSPF/RIP routing only</strong>, without touching the IP address. This "Service-Aware" approach is what allows the entire university to share an internet connection without breaking local branch services.
+    </p>
+
+    <div class="note">
+        <strong>Final Verification:</strong> Run <code>show ip nat translations</code> on the Admin Router while a PC is browsing the web. You will see a list of active mappings showing the translation from private to public.
+    </div>
+</div>
+
+<div class="section">
+    <h2>20. Advanced Security: ACL Implementation with Cross-Branch Services</h2>
+    
+    <p>
+        To demonstrate a professional security environment, we have deployed a <strong>Student Web Server (192.168.11.100)</strong> within the Student Branch. To support this, a corresponding DNS entry was added to the <strong>Admin DNS Server (192.168.10.196)</strong>, allowing users to browse via the URL <code>www.student.com</code>.
+    </p>
+
+    <h3>A. Understanding Standard vs. Extended ACLs</h3>
+    <p>
+        Security is implemented using two distinct types of filters based on the level of control required:
+    </p>
+    <ul>
+        <li><strong>Standard ACL (10):</strong> Only filters by <strong>Source IP</strong>. It is used here to block a specific IT Management PC from reaching any device in the Student Branch.</li>
+        <li><strong>Extended ACLs (120 & 130):</strong> Filters by <strong>Source, Destination, Protocol, and Port</strong>. This allows us to separate "Ping" (ICMP) from "Browsing" (TCP Ports 80/443).</li>
+    </ul>
+
+    <h3>B. Full CLI Configuration</h3>
+
+    <h4>1. Student Router: Standard ACL Placement</h4>
+    <p>Applied to <strong>GigabitEthernet 0/0 (Outbound)</strong>. This port is the exit point toward the Student LAN.</p>
+    <code>! Blocking Admin IT PC (192.168.10.3)
+access-list 10 deny host 192.168.10.3
+access-list 10 permit any
+
+interface GigabitEthernet0/0
+ ip access-group 10 out</code>
+
+    <h4>2. Administration Router: Extended ACL Placement</h4>
+    <p>Applied to <strong>Sub-interfaces Gig 0/0.20 and Gig 0/0.30 (Inbound)</strong>. These are the entry ports for VLAN traffic.</p>
+    <code>! VLAN 20 Policy: Allow Ping, Drop Web
+access-list 120 permit icmp 192.168.10.64 0.0.0.63 192.168.11.0 0.0.0.255
+access-list 120 deny tcp 192.168.10.64 0.0.0.63 192.168.11.0 0.0.0.255 eq 80
+access-list 120 permit ip any any
+
+! VLAN 30 Policy: Allow Web (Port 80), Drop Ping
+access-list 130 permit tcp 192.168.10.128 0.0.0.63 192.168.11.0 0.0.0.255 eq 80
+access-list 130 deny icmp 192.168.10.128 0.0.0.63 192.168.11.0 0.0.0.255
+access-list 130 permit ip any any
+
+interface gig0/0.20
+ ip access-group 120 in
+interface gig0/0.30
+ ip access-group 130 in</code>
+
+    <h3>C. Operational Logic: Pass vs. Drop</h3>
+    <p>
+        The routers process these rules using <strong>Inbound/Outbound Inspection</strong>. Here is how the traffic is handled in detail:
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Traffic Type</th>
+                <th>Protocol/Port</th>
+                <th>VLAN 20 Result</th>
+                <th>VLAN 30 Result</th>
+                <th>Reasoning</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Ping</strong></td>
+                <td>ICMP</td>
+                <td style="color: green;">PASS</td>
+                <td style="color: red;">DROP</td>
+                <td>ACL 130 specifically denies ICMP to prevent network scanning.</td>
+            </tr>
+            <tr>
+                <td><strong>Web Browsing</strong></td>
+                <td>TCP 80</td>
+                <td style="color: red;">DROP</td>
+                <td style="color: green;">PASS</td>
+                <td>ACL 120 blocks HTTP to restrict students from server access.</td>
+            </tr>
+            <tr>
+                <td><strong>DNS Query</strong></td>
+                <td>UDP 53</td>
+                <td style="color: green;">PASS</td>
+                <td style="color: green;">PASS</td>
+                <td>Handled by <code>permit ip any any</code> at the end of the lists.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>D. Why This Architecture?</h3>
+    <p>
+        <strong>1. Performance:</strong> By placing Extended ACLs <strong>Inbound</strong> on the Admin router ports, we drop unauthorized traffic before it ever crosses the Serial WAN links, saving bandwidth.
+    </p>
+    <p>
+        <strong>2. Accuracy:</strong> By using the <strong>Admin DNS Server</strong> to resolve <code>www.student.com</code>, we ensure that even when IPs are blocked, the name resolution still works, providing a professional "Server Not Found" or "Connection Timed Out" experience rather than a "DNS Failed" error.
+    </p>
+
+    <div class="note">
+        <strong>Verification Command:</strong> 
+        Use <code>show ip access-lists</code> to see the "hit count" on each line. This confirms exactly which rule dropped the packet during a failed ping or web request.
+    </div>
+</div>
+
+<div class="section">
+    <h2>21. Granular Security Framework: Access Control Policies</h2>
+    
+    <p>
+        The network security architecture is built on two layers of defense. First, a <strong>Standard ACL</strong> acts as a total blockade for specific high-level management devices. Second, <strong>Extended ACLs</strong> provide surgical control over department-specific permissions, allowing us to separate diagnostic tools from service access.
+    </p>
+
+    <h3>A. Service Policy Definitions</h3>
+    <p>
+        To ensure a balanced environment between the Administration and Student branches, the following rules have been applied:
+    </p>
+    <ul>
+        <li><strong>IT Management PC 1 (192.168.10.3):</strong> Undergoes a <em>Total Blockade</em>. It cannot Ping, Browse, or reach any internal services in the Student branch.</li>
+        <li><strong>VLAN 20 (Students/Staff):</strong> Designated as a <em>Diagnostic-Only</em> group. Users can Ping the Student Web Server to check connectivity but are blocked from viewing the website content (HTTP).</li>
+        <li><strong>VLAN 30 (Guest/External):</strong> Designated as a <em>Service-Only</em> group. Users can browse the <code>www.student.com</code> website but are blocked from sending Ping requests to maintain network stealth.</li>
+    </ul>
+
+    <h3>B. Full CLI Security Code</h3>
+
+    <h4>1. Standard ACL: Total Host Blockade</h4>
+    <p>
+        This is applied to the <strong>Student Router</strong> on interface <strong>GigabitEthernet 0/0 (Outbound)</strong>. This ensures that even if the IT PC traffic traverses the core network, it is dropped just before reaching the Student Switch.
+    </p>
+    <code>! ACL 10: Standard Host Filter
+access-list 10 deny host 192.168.10.3
+access-list 10 permit any
+
+interface GigabitEthernet0/0
+ ip access-group 10 out</code>
+
+    <h4>2. Extended ACL: Protocol & Port Management</h4>
+    <p>
+        These are applied to the <strong>Administration Router</strong> on the individual <strong>Sub-interfaces (Inbound)</strong>. This stops unauthorized traffic at the "Source Gate," before it consumes any WAN bandwidth.
+    </p>
+    <code>! VLAN 20 Extended Policy (Sub-interface G0/0.20)
+access-list 120 permit icmp 192.168.10.64 0.0.0.63 192.168.11.0 0.0.0.255
+access-list 120 deny tcp 192.168.10.64 0.0.0.63 192.168.11.0 0.0.0.255 eq 80
+access-list 120 permit ip any any
+
+! VLAN 30 Extended Policy (Sub-interface G0/0.30)
+access-list 130 permit tcp 192.168.10.128 0.0.0.63 192.168.11.0 0.0.0.255 eq 80
+access-list 130 deny icmp 192.168.10.128 0.0.0.63 192.168.11.0 0.0.0.255
+access-list 130 permit ip any any
+
+interface gig0/0.20
+ ip access-group 120 in
+interface gig0/0.30
+ ip access-group 130 in</code>
+
+    <h3>C. Traffic Handling & Port Logic</h3>
+    <p>
+        The "Pass or Block" behavior is determined by the Protocol Type and Port Number in the packet header:
+    </p>
+    
+    <p>
+        <strong>1. Standard Filter Logic:</strong> When IT PC1 sends a packet, the Student Router checks the Source IP field. Because it matches the <code>deny host 192.168.10.3</code> rule, the router drops the packet immediately, regardless of whether it is a Ping or a Web request.
+    </p>
+    <p>
+        <strong>2. Extended Filter Logic:</strong> When a VLAN 30 PC tries to Ping (ICMP), the Admin Router sees the ICMP protocol and matches it against the <code>deny icmp</code> rule in ACL 130, dropping it. However, if that same PC tries to browse (TCP Port 80), the router sees it matches the <code>permit tcp ... eq 80</code> rule and forwards it through the network.
+    </p>
+
+    <div class="note">
+        <strong>Security Overall Detail:</strong> 
+        By combining <strong>Standard Outbound</strong> and <strong>Extended Inbound</strong> ACLs, we create a robust multi-point defense. The Extended ACLs keep our Serial links clean of "garbage" traffic, while the Standard ACL ensures that even if a management PC is compromised, it cannot touch the Student branch's internal resources.
+    </div>
+</div>
+
+<div class="section">
+    <h2>22. Presentation Guide: Command Verification & Interpreting Results</h2>
+    <p>
+        This section serves as a reference for live demonstrations. It outlines the specific commands used to verify the network's health and explains how to "read" the router's logic to your audience.
+    </p>
+
+    <h3>A. Verifying Virtual Local Area Networks (VLANs)</h3>
+    <p><strong>Where to run:</strong> Any Administration Switch (Core or Floor).</p>
+    <code>Switch# show vlan brief</code>
+    <p><strong>How to interpret the output:</strong></p>
+    <ul>
+        <li><strong>Check Names:</strong> Ensure "IT", "ADMIN", and "SR" appear in the list.</li>
+        <li><strong>Check Ports:</strong> Verify that the correct physical ports (e.g., Fa0/3) are assigned to the correct VLAN ID. If a port isn't listed under a VLAN, it cannot communicate.</li>
+    </ul>
+
+    <h3>B. Verifying the Routing Table (OSPF & RIP)</h3>
+    <p><strong>Where to run:</strong> Administration Router or Student Core Router.</p>
+    <code>Router# show ip route</code>
+    <p><strong>How to interpret the output:</strong></p>
+        <table>
+        <tr>
+            <th>Code</th>
+            <th>Protocol</th>
+            <th>Meaning for Presentation</th>
+        </tr>
+        <tr>
+            <td><strong>C</strong></td>
+            <td>Connected</td>
+            <td>This network is physically plugged into this router.</td>
+        </tr>
+        <tr>
+            <td><strong>L</strong></td>
+            <td>Local</td>
+            <td>This is the specific IP address assigned to the router's own interface.</td>
+        </tr>
+        <tr>
+            <td><strong>O</strong></td>
+            <td>OSPF</td>
+            <td>Learned from another router via Open Shortest Path First. Preferred due to AD 110.</td>
+        </tr>
+        <tr>
+            <td><strong>R</strong></td>
+            <td>RIP</td>
+            <td>Learned via Routing Information Protocol. Used as backup (AD 120).</td>
+        </tr>
+    </table>
+
+    <h3>C. Verifying Network Address Translation (NAT)</h3>
+    <p><strong>Where to run:</strong> Administration Router (after pinging the ISP 200.200.200.2).</p>
+    <code>Admin_Router# show ip nat translations</code>
+    <p><strong>How to interpret the output:</strong></p>
+    <ul>
+        <li><strong>Inside Local:</strong> The private IP of the PC (e.g., 192.168.10.2).</li>
+        <li><strong>Inside Global:</strong> The "Public" IP the router converted it to (e.g., 200.200.200.1).</li>
+        <li><strong>Logic:</strong> If this table is empty, NAT is not working. If it shows the mapping, the private IP is successfully hidden from the ISP.</li>
+    </ul>
+
+    <h3>D. Verifying Access Control Lists (ACL)</h3>
+    <p><strong>Where to run:</strong> Admin Router (for Extended) or Student Router (for Standard).</p>
+    <code>Router# show access-lists</code>
+    <p><strong>How to interpret the output:</strong></p>
+    <ul>
+        <li><strong>Hit Counts:</strong> Look for the phrase <em>"matches"</em> at the end of a line (e.g., 10 matches).</li>
+        <li><strong>Proof of Block:</strong> If you try to ping from a blocked PC and the "matches" number for the <code>deny</code> line increases, you have mathematical proof that the router is actively dropping those packets.</li>
+    </ul>
+
+    <h3>E. Verifying DHCP Relay (IP Helper)</h3>
+    <p><strong>Where to run:</strong> A Student PC (Command Prompt).</p>
+    <code>C:\> ipconfig /all</code>
+    <p><strong>How to interpret the output:</strong></p>
+    <ul>
+        <li><strong>DHCP Server:</strong> It should show 192.168.10.194.</li>
+        <li><strong>Success:</strong> If the PC has an IP in the 192.168.11.x range, the "IP Helper-Address" on the Student Router successfully tunneled the request to the Admin branch.</li>
+    </ul>
+
+    <div class="note">
+        <strong>Teacher's Tip:</strong> During the presentation, use <strong>Simulation Mode</strong> in Packet Tracer to show the packet "Envelope." Click the envelope to show the <em>OSI Model</em> layers, specifically pointing out Layer 3 (IP) and Layer 4 (Port) changes during NAT or ACL filtering.
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="section">
+    <h2>📡 LIVE VERIFICATION PLAYGROUND: Input → Output for All Services</h2>
+    <p>This section provides <strong>realistic CLI commands and expected outputs</strong> for every major component in the topology. Use these during your presentation to prove that routing, NAT, ACLs, DHCP, Email, DNS, and VLANs are fully operational.</p>
+
+    <!-- ======================= 1. VLAN VERIFICATION ======================= -->
+    <h3>🔹 1. VLAN Verification (Switch)</h3>
+    <p><strong>Command input:</strong></p>
+    <code>Switch> enable
+Switch# show vlan brief</code>
+    <p><strong>Expected output (explanation + live-style table):</strong></p>
+    <div class="cli-block">
+        VLAN Name                             Status    Ports
+        ---- -------------------------------- --------- -------------------------------
+        1    default                          active    Fa0/1, Fa0/2, Fa0/6, Fa0/7
+        10   IT                               active    Fa0/3
+        20   ADMIN                            active    Fa0/4
+        30   SR                               active    Fa0/5
+        100  SERVER_NET                       active    Gi0/1, Gi0/2
+    </div>
+    <div class="note">
+        ✅ <strong>Interpretation:</strong> Fa0/3 belongs to VLAN10 (IT), Fa0/4 to VLAN20 (ADMIN), Fa0/5 to VLAN30 (SR). Trunk ports carry multiple VLANs.
+    </div>
+
+    <!-- ======================= 2. OSPF + ROUTING TABLE ======================= -->
+    <h3>🔹 2. OSPF & RIP Routing Table (Admin Router)</h3>
+    <p><strong>Command input:</strong></p>
+    <code>Admin_Router# show ip route</code>
+    <p><strong>Expected output (OSPF routes highlighted):</strong></p>
+    <div class="cli-block">
+        Codes: L - local, C - connected, O - OSPF, R - RIP, S - static
+        <span class="output-highlight">O    192.168.11.0/24 [110/2] via 202.202.202.2, 00:00:12, Serial0/3/1</span>
+        C    192.168.10.0/26 is directly connected, GigabitEthernet0/0.10
+        C    192.168.10.64/26 is directly connected, GigabitEthernet0/0.20
+        C    192.168.10.128/26 is directly connected, GigabitEthernet0/0.30
+        C    192.168.10.192/28 is directly connected, GigabitEthernet0/0.100
+        <span class="output-highlight">O    201.201.201.0/30 [110/65] via 200.200.200.2, 00:10:05, Serial0/3/0</span>
+        <span class="comment-out">R    192.168.11.0/24 [120/2] via 202.202.202.2, 00:00:20, Serial0/3/1 (backup)</span>
+    </div>
+    <div class="note">
+        ✅ <strong>Proof of OSPF:</strong> The <span class="output-highlight">highlighted O</span> routes confirm OSPF is exchanging prefixes (Student LAN 192.168.11.0). RIP shows as backup (AD 120 vs OSPF AD 110).
+    </div>
+
+    <!-- ======================= 3. NAT TRANSLATIONS ======================= -->
+    <h3>🔹 3. NAT / PAT Translation Table (After PC pings ISP)</h3>
+    <p><strong>Command input:</strong></p>
+    <code>Admin_Router# show ip nat translations</code>
+    <p><strong>Expected output (active mapping):</strong></p>
+    <div class="cli-block">
+        Pro Inside global      Inside local       Outside local      Outside global
+        icmp 200.200.200.1:1024 192.168.10.2:1024  200.200.200.2:1024  200.200.200.2:1024
+        tcp  200.200.200.1:1050 192.168.10.66:50123 8.8.8.8:80         8.8.8.8:80
+    </div>
+    <div class="note">
+        ✅ <strong>Interpretation:</strong> Private IPs (192.168.10.2, 192.168.10.66) are translated to public interface IP 200.200.200.1. This proves PAT overload is working.
+    </div>
+
+    <!-- ======================= 4. ACCESS-LISTS (ACL HIT COUNTS) ======================= -->
+    <h3>🔹 4. ACL Hit Counts (Proof of Filtering)</h3>
+    <p><strong>Command input (Admin Router):</strong></p>
+    <code>Admin_Router# show access-lists</code>
+    <p><strong>Expected output:</strong></p>
+    <div class="cli-block">
+        Extended IP access list 120
+            10 permit icmp 192.168.10.64 0.0.0.63 192.168.11.0 0.0.0.255 (4 matches)
+            20 deny tcp 192.168.10.64 0.0.0.63 192.168.11.0 0.0.0.255 eq 80 (12 matches)
+            30 permit ip any any (245 matches)
+        Extended IP access list 130
+            10 permit tcp 192.168.10.128 0.0.0.63 192.168.11.0 0.0.0.255 eq 80 (8 matches)
+            20 deny icmp 192.168.10.128 0.0.0.63 192.168.11.0 0.0.0.255 (3 matches)
+    </div>
+    <div class="note">
+        ✅ <strong>Security evidence:</strong> "deny tcp" line shows 12 matches → VLAN20 tried to browse but was BLOCKED.<br>
+        ✅ "deny icmp" shows 3 matches → VLAN30 tried to ping but was BLOCKED.<br>
+        ✅ This proves extended ACLs are actively filtering based on protocol/port.
+    </div>
+
+    <!-- ======================= 5. DHCP RELAY & IPCONFIG (Student PC) ======================= -->
+    <h3>🔹 5. DHCP Relay Verification (Student PC)</h3>
+    <p><strong>Command input (Student PC command prompt):</strong></p>
+    <code>C:\> ipconfig /all</code>
+    <p><strong>Expected output:</strong></p>
+    <div class="cli-block">
+        Host Name . . . . . . . . . : StudentPC1
+        DHCP Enabled . . . . . . . : Yes
+        <span class="output-highlight">DHCP Server . . . . . . . . : 192.168.10.194</span>
+        IPv4 Address . . . . . . . : 192.168.11.2 (Preferred)
+        Subnet Mask . . . . . . . : 255.255.255.0
+        Default Gateway . . . . . : 192.168.11.1
+        DNS Servers . . . . . . . : 192.168.10.196
+    </div>
+    <div class="note">
+        ✅ <strong>Cross-branch success:</strong> DHCP Server = 192.168.10.194 (Admin server) → proves <code>ip helper-address</code> on Student Router works.
+    </div>
+
+    <!-- ======================= 6. DNS RESOLUTION TEST ======================= -->
+    <h3>🔹 6. DNS Resolution (nslookup from any PC)</h3>
+    <p><strong>Command input:</strong></p>
+    <code>PC> nslookup www.admin.com</code>
+    <p><strong>Expected output:</strong></p>
+    <div class="cli-block">
+        Server:  UnKnown
+        Address:  192.168.10.196
+        Name:    www.admin.com
+        Address:  192.168.10.195
+    </div>
+    <div class="note">
+        ✅ DNS Server (192.168.10.196) correctly resolves www.admin.com → web server IP 192.168.10.195.
+    </div>
+
+    <!-- ======================= 7. EMAIL SERVICE (SMTP/POP3) ======================= -->
+    <h3>🔹 7. Email Client Simulation (Send & Receive)</h3>
+    <p><strong>Email client configuration (Desktop → Email):</strong></p>
+    <div class="cli-block" style="background:#1a2a2a;">
+        📧 <strong>Incoming Mail Server (POP3):</strong> mail.admin.com  (192.168.10.194)<br>
+        📤 <strong>Outgoing Mail Server (SMTP):</strong> mail.admin.com<br>
+        👤 <strong>Username:</strong> student1<br>
+        🔑 <strong>Password:</strong> 123<br>
+        ✅ <strong>Status:</strong> Connected — Email sent from student1@admin.com to staff1@admin.com successfully.
+    </div>
+    <div class="note">
+        ✅ Email server (192.168.10.194) receives and delivers messages across branches.
+    </div>
+
+    <!-- ======================= 8. STANDARD ACL (BLOCK SPECIFIC HOST) ======================= -->
+    <h3>🔹 8. Standard ACL: Block IT Management PC (192.168.10.3)</h3>
+    <p><strong>Command input (Student Router):</strong></p>
+    <code>Student_Router# show access-list 10</code>
+    <p><strong>Expected output:</strong></p>
+    <div class="cli-block">
+        Standard IP access list 10
+            10 deny host 192.168.10.3 (17 matches)
+            20 permit any (342 matches)
+    </div>
+    <div class="note">
+        ✅ <strong>17 matches</strong> on deny line → PC 192.168.10.3 tried to reach student branch but was blocked. Total isolation enforced.
+    </div>
+
+    <!-- ======================= 9. PING TEST BETWEEN VLANS ======================= -->
+    <h3>🔹 9. Ping Tests (ICMP Behavior with ACLs)</h3>
+    <p><strong>From VLAN20 (Admin) to Student Web Server (192.168.11.100):</strong></p>
+    <div class="cli-block">
+        C:\> ping 192.168.11.100
+        Reply from 192.168.11.100: bytes=32 time=1ms TTL=62
+        Reply from 192.168.11.100: bytes=32 time=1ms TTL=62   <span class="comment-out">(Allowed: ACL 120 permits ICMP)</span>
+    </div>
+    <p><strong>From VLAN30 (SR) to Student Web Server (192.168.11.100):</strong></p>
+    <div class="cli-block">
+        C:\> ping 192.168.11.100
+        Request timed out.
+        Request timed out.   <span class="comment-out">(Blocked: ACL 130 denies ICMP)</span>
+    </div>
+    <div class="note">
+        ✅ VLAN20 can ping (diagnostic allowed). VLAN30 cannot ping (security policy).
+    </div>
+
+    <!-- ======================= 10. HTTP ACCESS (WEB BROWSING) ======================= -->
+    <h3>🔹 10. HTTP/HTTPS Browsing Behavior</h3>
+    <p><strong>VLAN20 (Admin) browsing http://www.student.com:</strong></p>
+    <div class="cli-block">
+        <span style="color:#ff8888;">❌ Connection refused / Timeout</span>   <span class="comment-out">(Blocked by ACL 120 deny tcp eq 80)</span>
+    </div>
+    <p><strong>VLAN30 (SR) browsing http://www.student.com:</strong></p>
+    <div class="cli-block">
+        <span style="color:#aaffaa;">✅ HTTP/1.1 200 OK  |  Welcome to Student Web Server</span>   <span class="comment-out">(Permitted by ACL 130)</span>
+    </div>
+    <div class="note">
+        ✅ ACLs differentiate between ICMP and HTTP: VLAN30 gets web access, VLAN20 gets ping access.
+    </div>
+
+    <!-- ======================= 11. TRACEROUTE / PATH VERIFICATION ======================= -->
+    <h3>🔹 11. Traceroute to ISP (NAT Path)</h3>
+    <p><strong>Command input (Admin PC):</strong></p>
+    <code>C:\> tracert 200.200.200.2</code>
+    <p><strong>Expected output:</strong></p>
+    <div class="cli-block">
+        1   1 ms   1 ms   1 ms  192.168.10.1
+        2   2 ms   2 ms   2 ms  200.200.200.1   <span class="comment-out">(NAT translation happens here)</span>
+        3   3 ms   3 ms   3 ms  200.200.200.2
+    </div>
+    <div class="note">
+        ✅ NAT hides internal IPs after first hop — ISP sees only 200.200.200.1.
+    </div>
+
+    <!-- ======================= 12. OSPF NEIGHBOR DETAIL ======================= -->
+    <h3>🔹 12. OSPF Neighbor Relationship</h3>
+    <p><strong>Command input:</strong></p>
+    <code>Admin_Router# show ip ospf neighbor</code>
+    <p><strong>Expected output:</strong></p>
+    <div class="cli-block">
+        Neighbor ID     Pri   State           Dead Time   Address         Interface
+        200.200.200.2     1   FULL/DR         00:00:35    200.200.200.2   Serial0/3/0
+        202.202.202.2     1   FULL/DR         00:00:32    202.202.202.2   Serial0/3/1
+    </div>
+    <div class="note">
+        ✅ State = FULL → OSPF adjacency established with both ISP and Student routers.
+    </div>
+
+    <!-- ======================= 13. RIP DATABASE ======================= -->
+    <h3>🔹 13. RIP Routing Information</h3>
+    <p><strong>Command input:</strong></p>
+    <code>Admin_Router# show ip rip database</code>
+    <p><strong>Expected output:</strong></p>
+    <div class="cli-block">
+        192.168.10.0/26    auto-summary
+        192.168.10.64/26   auto-summary
+        192.168.11.0/24    directly connected, Serial0/3/1
+            [2] via 202.202.202.2, 00:00:20
+    </div>
+    <div class="note">
+        ✅ RIP is distributing student subnet as a backup route.
+    </div>
+
+    <!-- ======================= 14. PORT-SPECIFIC VERIFICATION ======================= -->
+    <h3>🔹 14. Email & Web Port Listening (Server side)</h3>
+    <p><strong>On Admin Server (192.168.10.194) CLI:</strong></p>
+    <div class="cli-block">
+        netstat -an | find "25"
+          TCP    0.0.0.0:25      0.0.0.0:0      LISTENING    (SMTP Active)
+        netstat -an | find "110"
+          TCP    0.0.0.0:110     0.0.0.0:0      LISTENING    (POP3 Active)
+    </div>
+    <div class="note">
+        ✅ SMTP (port 25) and POP3 (port 110) are listening — email service fully functional.
+    </div>
+
+    <!-- ======================= 15. SUMMARY TABLE ======================= -->
+    <h3>🔹 15. Feature Validation Summary Table</h3>
+    <table>
+        <thead>
+            <tr><th>Component</th><th>Verification Command</th><th>Expected Indicator</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>VLANs</td><td><code>show vlan brief</code></td><td>Fa0/3 in VLAN10</td><td style="color:green;">✅ PASS</td></tr>
+            <tr><td>OSPF</td><td><code>show ip route ospf</code></td><td>O 192.168.11.0</td><td style="color:green;">✅ PASS</td></tr>
+            <tr><td>RIP</td><td><code>show ip route rip</code></td><td>R 192.168.11.0 (backup)</td><td style="color:green;">✅ PASS</td></tr>
+            <tr><td>NAT/PAT</td><td><code>show ip nat translations</code></td><td>Inside global mapping</td><td style="color:green;">✅ PASS</td></tr>
+            <tr><td>Extended ACL</td><td><code>show access-list 120</code></td><td>matches on deny tcp 80</td><td style="color:green;">✅ PASS</td></tr>
+            <tr><td>Standard ACL</td><td><code>show access-list 10</code></td><td>matches on deny host</td><td style="color:green;">✅ PASS</td></tr>
+            <tr><td>DHCP Relay</td><td><code>ipconfig /all</code> (Student PC)</td><td>DHCP Server 192.168.10.194</td><td style="color:green;">✅ PASS</td></tr>
+            <tr><td>DNS</td><td><code>nslookup www.admin.com</code></td><td>Address 192.168.10.195</td><td style="color:green;">✅ PASS</td></tr>
+            <tr><td>Email (SMTP/POP3)</td><td>Email client test</td><td>Send/Receive success</td><td style="color:green;">✅ PASS</td></tr>
+            <tr><td>HTTP Access</td><td>Browser to www.student.com</td><td>VLAN30 gets 200 OK</td><td style="color:green;">✅ PASS</td></tr>
+        </tbody>
+    </table>
+
+    <div class="note" style="background-color: #e0f2e9;">
+        🎤 <strong>Presentation Script Tip:</strong> For each command, first type the <strong>INPUT</strong> on the live Packet Tracer router, then show the <strong>OUTPUT</strong> from this table. Highlight the key fields: <em>“O” routes, NAT mappings, ACL match counters, and DHCP server address</em>. This proves that every service — routing, translation, filtering, and application layer — is fully integrated and operational.
+    </div>
+</div>
+
+</body>
+</html>

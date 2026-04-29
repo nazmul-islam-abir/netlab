@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Branch Network Blueprint | VLAN Segmentation (192.168.11.0)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #eef2f5;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            padding: 2rem 1.5rem;
+            color: #0a2a3b;
+        }
+
+        .container {
+            max-width: 1350px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 1.8rem;
+            box-shadow: 0 25px 40px -12px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            padding: 2rem 2rem 2.5rem;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #1a4d5f, #2c7a4d);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+        }
+
+        .badge {
+            background: #dff3e3;
+            color: #1c6d3f;
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            margin-left: 1rem;
+            vertical-align: middle;
+            border: 1px solid #bddcbe;
+        }
+
+        .sub {
+            color: #2c5a3e;
+            margin: 0.8rem 0 1.8rem 0;
+            border-left: 5px solid #2c7a4d;
+            padding-left: 1.2rem;
+            font-weight: 500;
+        }
+
+        .diagram-card {
+            background: #fafef7;
+            border: 1px solid #cce3d0;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            margin: 1.8rem 0;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            line-height: 1.45;
+            color: #1b4d2e;
+        }
+
+        h2 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            margin-top: 2.2rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 4px solid #2c7a4d;
+            display: inline-block;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 1.8rem 0 0.9rem 0;
+            color: #1d573b;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .code-block {
+            background: #0d2a1e;
+            color: #eef7e9;
+            border-radius: 1rem;
+            padding: 1.1rem 1.5rem;
+            overflow-x: auto;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.85rem;
+            margin: 1rem 0 1.4rem 0;
+            box-shadow: inset 0 0 0 1px #3e6b4a, 0 6px 12px rgba(0,0,0,0.08);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .code-block code {
+            color: #c7e9b1;
+        }
+
+        .note {
+            background: #e6f4ea;
+            border-left: 6px solid #2c7a4d;
+            padding: 1rem 1.4rem;
+            border-radius: 1rem;
+            margin: 1.2rem 0;
+            font-weight: 500;
+        }
+
+        .warning-note {
+            background: #fff4e0;
+            border-left: 6px solid #f4a261;
+            padding: 1rem 1.4rem;
+            border-radius: 1rem;
+            margin: 1.2rem 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.4rem 0;
+            background: white;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        th {
+            background: #2c5a3e;
+            color: white;
+            padding: 12px 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        td {
+            border: 1px solid #cce0cf;
+            padding: 10px 10px;
+            background: #ffffff;
+        }
+
+        .highlight {
+            background: #fef1cf;
+            font-weight: 700;
+        }
+
+        .grid-ip {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin: 1rem 0;
+        }
+
+        .ip-card {
+            background: #f0f9f0;
+            border-radius: 1rem;
+            padding: 0.6rem 1rem;
+            border: 1px solid #bcddbb;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        footer {
+            margin-top: 2.8rem;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #4f6f5a;
+            border-top: 1px solid #cce0cf;
+            padding-top: 1.6rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div>
+        <h1>🏢 Branch Network – VLAN & Core Routing</h1>
+        <span class="badge">192.168.11.0/24 · 3 VLANs · br3560 + Access Switches</span>
+    </div>
+    <div class="sub">
+        ✅ Complete branch configuration (mirroring HQ design) – SALES, HR, IT VLANs.<br>
+        ✅ br3560 Layer 3 switching + inter‑VLAN routing + trunk ports.<br>
+        ✅ Ready for future DHCP (local server or relay to HQ).
+    </div>
+
+    <!-- BRANCH IP PLAN -->
+    <h2>📋 Branch IP Addressing Plan</h2>
+    <table>
+        <thead>
+            <tr><th>VLAN</th><th>Name</th><th>Network</th><th>Subnet Mask</th><th>Gateway (SVI)</th><th>Hosts</th><th>Reserved</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>10</td><td>SALES</td><td>192.168.11.0/26</td><td>255.255.255.192</td><td>192.168.11.1</td><td>62 (33 used)</td><td>.2–.11</td></tr>
+            <tr><td>20</td><td>HR</td><td>192.168.11.64/26</td><td>255.255.255.192</td><td>192.168.11.65</td><td>62 (55 used)</td><td>.66–.75</td></tr>
+            <tr><td>30</td><td>IT</td><td>192.168.11.128/26</td><td>255.255.255.192</td><td>192.168.11.129</td><td>62 (45 used)</td><td>.130–.139</td></tr>
+        </tbody>
+    </table>
+    <div class="note">
+        🔗 <strong>Router link (Core ↔ Branch Router):</strong> 192.168.100.0/30 &nbsp;→&nbsp; br3560: .2 | Branch Router: .1<br>
+        📍 <strong>Future extension:</strong> free block .140–.251 for servers, printers or DHCP server.<br>
+        🧠 <strong>Structure identical to HQ</strong> – easy management and troubleshooting.
+    </div>
+
+    <!-- TOPOLOGY DIAGRAM -->
+    <h2>🏗️ Branch Physical Topology</h2>
+    <div class="diagram-card">
+        Branch Router (G0/0: 192.168.100.1/30)
+              │
+        Gig1/0/1 (br3560 .100.2/30)
+        ┌─[ br3560 Core Switch ]────────────────┐
+        │ (VLAN 10 SVI .1)                      │
+        │ (VLAN 20 SVI .65)                     │
+        │ (VLAN 30 SVI .129)                    │
+        └┬──────────┬──────────┬────────────────┘
+         │          │          │
+     Gig1/0/2    Gig1/0/3    Gig1/0/4
+     trunk10     trunk20     trunk30
+         │          │          │
+    [SALES_br]  [HR_br]    [IT_br]
+     Fa0/1       Fa0/1       Fa0/1
+     trunk       trunk       trunk
+         │          │          │
+     Fa0/2-24    Fa0/2-24    Fa0/2-24
+     access      access      access
+     VLAN 10     VLAN 20     VLAN 30
+     33 hosts    55 hosts    45 hosts
+    </div>
+
+    <!-- ========== BRANCH CONFIGURATIONS ========== -->
+    <h2>⚙️ Branch Device Configurations (Copy‑Paste Ready)</h2>
+
+    <h3>🎯 1. br3560 Core Switch – VLANs, SVIs, Trunks, Routing</h3>
+    <div class="code-block"><pre><code>enable
+configure terminal
+
+vlan 10
+ name SALES
+ exit
+vlan 20
+ name HR
+ exit
+vlan 30
+ name IT
+ exit
+
+interface vlan 10
+ ip address 192.168.11.1 255.255.255.192
+ no shutdown
+ exit
+interface vlan 20
+ ip address 192.168.11.65 255.255.255.192
+ no shutdown
+ exit
+interface vlan 30
+ ip address 192.168.11.129 255.255.255.192
+ no shutdown
+ exit
+
+interface gigabitEthernet 1/0/2
+ switchport mode trunk
+ switchport trunk allowed vlan 10
+ no shutdown
+ exit
+interface gigabitEthernet 1/0/3
+ switchport mode trunk
+ switchport trunk allowed vlan 20
+ no shutdown
+ exit
+interface gigabitEthernet 1/0/4
+ switchport mode trunk
+ switchport trunk allowed vlan 30
+ no shutdown
+ exit
+
+interface gigabitEthernet 1/0/1
+ no switchport
+ ip address 192.168.100.2 255.255.255.252
+ no shutdown
+ exit
+
+ip routing
+ip route 0.0.0.0 0.0.0.0 192.168.100.1
+
+end
+write memory</code></pre></div>
+
+    <h3>🌐 2. Branch Router (Gateway to br3560)</h3>
+    <div class="code-block"><pre><code>enable
+configure terminal
+
+interface gigabitEthernet 0/0
+ ip address 192.168.100.1 255.255.255.252
+ no shutdown
+ exit
+
+ip route 192.168.11.0 255.255.255.192 192.168.100.2
+ip route 192.168.11.64 255.255.255.192 192.168.100.2
+ip route 192.168.11.128 255.255.255.192 192.168.100.2
+
+end
+write memory</code></pre></div>
+
+    <h3>🖥️ 3. Branch SALES Switch (VLAN 10 – 33 hosts)</h3>
+    <div class="code-block"><pre><code>enable
+configure terminal
+
+vlan 10
+ name SALES
+ exit
+
+interface fastEthernet 0/1
+ switchport mode trunk
+ switchport trunk allowed vlan 10
+ no shutdown
+ exit
+
+interface range fastEthernet 0/2-24
+ switchport mode access
+ switchport access vlan 10
+ no shutdown
+ exit
+
+end
+write memory</code></pre></div>
+
+    <h3>👥 4. Branch HR Switch (VLAN 20 – 55 hosts)</h3>
+    <div class="code-block"><pre><code>enable
+configure terminal
+
+vlan 20
+ name HR
+ exit
+
+interface fastEthernet 0/1
+ switchport mode trunk
+ switchport trunk allowed vlan 20
+ no shutdown
+ exit
+
+interface range fastEthernet 0/2-24
+ switchport mode access
+ switchport access vlan 20
+ no shutdown
+ exit
+
+end
+write memory</code></pre></div>
+
+    <h3>💻 5. Branch IT Switch (VLAN 30 – 45 hosts)</h3>
+    <div class="code-block"><pre><code>enable
+configure terminal
+
+vlan 30
+ name IT
+ exit
+
+interface fastEthernet 0/1
+ switchport mode trunk
+ switchport trunk allowed vlan 30
+ no shutdown
+ exit
+
+interface range fastEthernet 0/2-24
+ switchport mode access
+ switchport access vlan 30
+ no shutdown
+ exit
+
+end
+write memory</code></pre></div>
+
+    <!-- DHCP FUTURE NOTE -->
+    <h2>📡 Branch DHCP Strategy (Future)</h2>
+    <div class="warning-note">
+        <strong>Option 1 – Local DHCP server (recommended for independence):</strong><br>
+        Add a Server-PT on branch, assign static IP 192.168.11.140/26 (gateway 192.168.11.129).<br>
+        Create three pools: SALES (start .12), HR (start .76), IT (start .141).<br>
+        Configure <code>ip helper-address 192.168.11.140</code> on br3560 SVIs.<br><br>
+        <strong>Option 2 – Central DHCP via HQ (if WAN link exists):</strong><br>
+        Use <code>ip helper-address 192.168.10.140</code> on branch SVIs, add static routes on HQ Router and branch router to forward DHCP traffic. Requires inter‑router connectivity.
+    </div>
+
+    <!-- CLIENT SETUP -->
+    <h2>💻 Branch PCs – Static or DHCP ready</h2>
+    <div class="note">
+        ✅ <strong>Static IP example (SALES):</strong> 192.168.11.12/26, gateway 192.168.11.1<br>
+        ✅ <strong>DHCP (future):</strong> set PC to DHCP after DHCP server is deployed.<br>
+        ✅ All access ports are already pre‑configured in correct VLAN – just plug and play.
+    </div>
+
+    <!-- VERIFICATION -->
+    <h2>🔍 Verification (Branch only)</h2>
+    <div class="code-block"><pre><code>! On br3560
+show vlan brief
+show interfaces trunk
+show ip route
+ping 192.168.100.1          ! Branch router
+ping 192.168.11.1           ! SVI VLAN 10
+ping 192.168.11.65          ! SVI VLAN 20
+ping 192.168.11.129         ! SVI VLAN 30
+
+! On Branch Router
+ping 192.168.100.2          ! br3560
+ping 192.168.11.1
+
+! On any Branch PC (SALES)
+ping 192.168.11.1
+ping 192.168.11.65
+ping 192.168.11.129</code></pre></div>
+
+    <!-- TROUBLESHOOTING -->
+    <h2>🛠️ Troubleshooting Branch VLANs</h2>
+    <ul style="margin-left: 1.8rem; line-height: 1.55; margin-bottom: 1.5rem;">
+        <li><strong>No inter‑VLAN ping:</strong> verify <code>ip routing</code> on br3560 and SVI status (<code>show ip interface brief</code>).</li>
+        <li><strong>Trunk not working:</strong> <code>show interfaces trunk</code> on both br3560 and access switch – allowed VLANs must match.</li>
+        <li><strong>PC cannot reach gateway:</strong> check switchport access VLAN (<code>show int fa0/x switchport</code>) and port status.</li>
+        <li><strong>Branch router can't ping br3560:</strong> verify IP on Gig0/0 (192.168.100.1/30) and cable connection.</li>
+    </ul>
+
+    <!-- COMPARISON WITH HQ -->
+    <h2>📊 Branch vs HQ – mirrored design</h2>
+    <table>
+        <thead><tr><th>Component</th><th>HQ Network</th><th>Branch Network</th></tr></thead>
+        <tbody>
+            <tr><td>Subnet base</td><td>192.168.10.0/24</td><td>192.168.11.0/24</td></tr>
+            <tr><td>SALES VLAN</td><td>192.168.10.0/26</td><td>192.168.11.0/26</td></tr>
+            <tr><td>HR VLAN</td><td>192.168.10.64/26</td><td>192.168.11.64/26</td></tr>
+            <tr><td>IT VLAN</td><td>192.168.10.128/26</td><td>192.168.11.128/26</td></tr>
+            <tr><td>Core switch</td><td>3650</td><td>br3560</td></tr>
+            <tr><td>Router link to core</td><td>192.168.10.252/30</td><td>192.168.100.0/30</td></tr>
+            <tr><td>Default route</td><td>0.0.0.0/0 → HQ Router</td><td>0.0.0.0/0 → Branch Router</td></tr>
+        </tbody>
+    </table>
+
+    <!-- FUTURE HQ-BRANCH INTERCONNECT -->
+    <h2>🔗 Future: Connecting HQ + Branch</h2>
+    <div class="note">
+        <strong>When you connect both sites:</strong><br>
+        • Use a dedicated /30 subnet (e.g., 192.168.200.0/30) between HQ Router and Branch Router.<br>
+        • Add static routes on HQ Router: <code>ip route 192.168.11.0 255.255.255.0 &lt;branch_router_ip&gt;</code><br>
+        • Add static routes on Branch Router: <code>ip route 192.168.10.0 255.255.255.0 &lt;hq_router_ip&gt;</code><br>
+        • After routing works, decide if DHCP stays local or centralised.
+    </div>
+
+    <footer>
+        ✅ Branch VLAN configuration complete – identical structure to HQ.<br>
+        ✅ br3560 handles inter‑VLAN routing, branch router acts as gateway.<br>
+        ✅ Ready for production, DHCP, and future site‑to‑site connectivity.
+    </footer>
+</div>
+</body>
+</html>

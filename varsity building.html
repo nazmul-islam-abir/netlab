@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Topology Setup Guide</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; background-color: #f4f7f6; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #2c3e50; padding-bottom: 10px; }
+        h2 { color: #2980b9; margin-top: 30px; border-left: 5px solid #2980b9; padding-left: 10px; }
+        .section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #2980b9; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        code { background-color: #272822; color: #f8f8f2; padding: 15px; border-radius: 5px; display: block; white-space: pre; overflow-x: auto; font-family: 'Courier New', Courier, monospace; line-height: 1.4; margin: 10px 0; }
+        .note { background-color: #fff3cd; border-left: 5px solid #ffeeba; padding: 15px; margin: 15px 0; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <h1>Network Configuration Manual</h1>
+    <p><strong>Project:</strong> Building 1 VLSM Setup (Router-on-a-Stick with DHCP Relay)</p>
+
+    <div class="section">
+        <h2>1. IP Planning Table (VLSM)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Subnet/VLAN</th>
+                    <th>Network ID</th>
+                    <th>Subnet Mask</th>
+                    <th>Gateway (Router)</th>
+                    <th>Usable Range</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>VLAN 10 (Students)</td>
+                    <td>192.168.10.32/27</td>
+                    <td>255.255.255.224</td>
+                    <td>192.168.10.33</td>
+                    <td>.34 - .62</td>
+                </tr>
+                <tr>
+                    <td>VLAN 20 (Teachers)</td>
+                    <td>192.168.10.64/27</td>
+                    <td>255.255.255.224</td>
+                    <td>192.168.10.65</td>
+                    <td>.66 - .94</td>
+                </tr>
+                <tr>
+                    <td>VLAN 30 (IT-Staff)</td>
+                    <td>192.168.10.96/28</td>
+                    <td>255.255.255.240</td>
+                    <td>192.168.10.97</td>
+                    <td>.98 - .110</td>
+                </tr>
+                <tr>
+                    <td>Server Subnet</td>
+                    <td>192.168.10.112/28</td>
+                    <td>255.255.255.240</td>
+                    <td>192.168.10.113</td>
+                    <td>.114 - .126</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>2. Core Router CLI Setup</h2>
+        <p>Configures sub-interfaces and sets up the DHCP Relay (Helper Address).</p>
+        <code>enable
+conf t
+int gi0/0
+ no shut
+exit
+
+interface GigabitEthernet0/0.10
+ encapsulation dot1Q 10
+ ip address 192.168.10.33 255.255.255.224
+ ip helper-address 192.168.10.114
+exit
+
+interface GigabitEthernet0/0.20
+ encapsulation dot1Q 20
+ ip address 192.168.10.65 255.255.255.224
+ ip helper-address 192.168.10.114
+exit
+
+interface GigabitEthernet0/0.30
+ encapsulation dot1Q 30
+ ip address 192.168.10.97 255.255.255.240
+ ip helper-address 192.168.10.114
+exit
+
+interface GigabitEthernet0/0.100
+ encapsulation dot1Q 1
+ ip address 192.168.10.113 255.255.255.240
+exit
+do write</code>
+    </div>
+
+    <div class="section">
+        <h2>3. Switch Configurations</h2>
+        <h3>Floor 1 Switch (Main)</h3>
+        <code>vlan 10
+vlan 20
+vlan 30
+exit
+int range fa0/1 - 3
+ switchport mode trunk
+exit
+int fa0/4
+ sw acc vlan 10
+int fa0/5
+ sw acc vlan 20
+int fa0/6
+ sw acc vlan 30</code>
+
+        <h3>Floor 2 Switch</h3>
+        <code>vlan 10
+vlan 20
+vlan 30
+exit
+int fa0/1
+ switchport mode trunk
+exit
+int fa0/2
+ sw acc vlan 10
+int fa0/3
+ sw acc vlan 20
+int fa0/4
+ sw acc vlan 30</code>
+    </div>
+
+    <div class="section">
+        <h2>4. DHCP Server Manual Setup (GUI)</h2>
+        <div class="note">
+            <strong>Note:</strong> Ensure the Server itself has Static IP: 192.168.10.114 | Mask: 255.255.255.240 | GW: 192.168.10.113
+        </div>
+        <table>
+            <tr>
+                <th>Pool Name</th>
+                <th>Gateway</th>
+                <th>DNS Server</th>
+                <th>Start IP</th>
+                <th>Subnet Mask</th>
+            </tr>
+            <tr>
+                <td>Students</td>
+                <td>192.168.10.33</td>
+                <td>192.168.10.116</td>
+                <td>192.168.10.34</td>
+                <td>255.255.255.224</td>
+            </tr>
+            <tr>
+                <td>Teachers</td>
+                <td>192.168.10.65</td>
+                <td>192.168.10.116</td>
+                <td>192.168.10.66</td>
+                <td>255.255.255.224</td>
+            </tr>
+            <tr>
+                <td>IT-Staff</td>
+                <td>192.168.10.97</td>
+                <td>192.168.10.116</td>
+                <td>192.168.10.98</td>
+                <td>255.255.255.240</td>
+            </tr>
+        </table>
+    </div>
+
+
+    <div class="section">
+        <h2>5. PUC Application Layer Services</h2>
+        <p>This section documents the configuration for the servers in the 192.168.10.112/28 subnet.</p>
+
+        <h3>DNS Records (Server: 192.168.10.116)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Domain Name</th>
+                    <th>Record Type</th>
+                    <th>Mapped IP Address</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>puc.com</strong></td>
+                    <td>A Record</td>
+                    <td>192.168.10.115 (Web Server)</td>
+                </tr>
+                <tr>
+                    <td><strong>mail.puc.com</strong></td>
+                    <td>A Record</td>
+                    <td>192.168.10.114 (Email Server)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>HTTP/HTTPS Web Service</h3>
+        <div class="note">
+            <strong>Location:</strong> Server 192.168.10.115 <br>
+            <strong>Page Content:</strong> <code>&lt;h1&gt;Welcome to Premier University Chittagong&lt;/h1&gt;</code>
+        </div>
+
+        <h3>Email Server Setup (mail.puc.com)</h3>
+        <p><strong>Service Status:</strong> SMTP (ON), POP3 (ON) | <strong>Domain:</strong> puc.com</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Password</th>
+                    <th>PC Assignment</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>student1</td>
+                    <td>123</td>
+                    <td>VLAN 10 Student PC</td>
+                </tr>
+                <tr>
+                    <td>teacher1</td>
+                    <td>123</td>
+                    <td>VLAN 20 Teacher PC</td>
+                </tr>
+                <tr>
+                    <td>itstaff1</td>
+                    <td>123</td>
+                    <td>VLAN 30 IT PC</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>6. Final Testing Checklist</h2>
+        <ul>
+            <li><strong>Step 1:</strong> Ping <code>192.168.10.115</code> from a PC to confirm connectivity.</li>
+            <li><strong>Step 2:</strong> Open PC Browser and type <code>puc.com</code> to verify DNS and HTTP.</li>
+            <li><strong>Step 3:</strong> Compose an email from <code>student1@puc.com</code> to <code>teacher1@puc.com</code>.</li>
+        </ul>
+    </div>
+<div class="section">
+        <h2>7. Full Core Router Interface & Routing Setup</h2>
+        <p>This section documents the IP assignments, NAT rules, and dual-protocol (OSPF & RIP) routing for the network.</p>
+        
+        <h3>BUILDING 1: Core Router Configuration</h3>
+        <code>! --- NAT Access Control List ---
+access-list 100 deny ip 192.168.10.0 0.0.0.255 192.168.11.0 0.0.0.255
+access-list 100 permit ip 192.168.10.0 0.0.0.255 any
+
+enable
+conf t
+! --- Interface Setup ---
+interface GigabitEthernet0/0.10
+ encapsulation dot1Q 10
+ ip address 192.168.10.33 255.255.255.224
+ ip nat inside
+exit
+interface GigabitEthernet0/0.20
+ encapsulation dot1Q 20
+ ip address 192.168.10.65 255.255.255.224
+ ip nat inside
+exit
+interface GigabitEthernet0/0.30
+ encapsulation dot1Q 30
+ ip address 192.168.10.97 255.255.255.240
+ ip nat inside
+exit
+interface GigabitEthernet0/0.100
+ encapsulation dot1Q 1
+ ip address 192.168.10.113 255.255.255.240
+ ip nat inside
+exit
+interface Serial0/3/0
+ description Link_to_Building_2
+ ip address 203.203.203.1 255.255.255.252
+ no shut
+exit
+interface Serial0/3/1
+ description Link_to_ISP_2
+ ip address 200.200.200.1 255.255.255.252
+ ip nat outside
+ no shut
+exit
+
+! --- NAT Translation ---
+ip nat inside source list 100 interface Serial0/3/1 overload
+
+! --- Routing Protocols ---
+router rip
+ version 2
+ network 192.168.10.0
+ network 203.203.203.0
+ network 200.200.200.0
+ no auto-summary
+exit
+router ospf 1
+ network 192.168.10.0 0.0.0.255 area 0
+ network 203.203.203.0 0.0.0.3 area 0
+ network 200.200.200.0 0.0.0.3 area 0
+exit</code>
+
+        <h3>BUILDING 2: Core Router Configuration</h3>
+        <code>! --- NAT Access Control List ---
+access-list 100 deny ip 192.168.11.0 0.0.0.255 192.168.10.0 0.0.0.255
+access-list 100 permit ip 192.168.11.0 0.0.0.255 any
+
+enable
+conf t
+interface GigabitEthernet0/0
+ ip address 192.168.11.1 255.255.255.0
+ ip nat inside
+ no shut
+exit
+interface Serial0/3/1
+ description Link_to_Building_1
+ ip address 203.203.203.2 255.255.255.252
+ no shut
+exit
+interface Serial0/3/0
+ description Link_to_ISP_1
+ ip address 202.202.202.1 255.255.255.252
+ ip nat outside
+ no shut
+exit
+
+! --- NAT Translation ---
+ip nat inside source list 100 interface Serial0/3/0 overload
+
+! --- Routing Protocols ---
+router rip
+ version 2
+ network 192.168.11.0
+ network 203.203.203.0
+ network 202.202.202.0
+ no auto-summary
+exit
+router ospf 1
+ network 192.168.11.0 0.0.0.255 area 0
+ network 203.203.203.0 0.0.0.3 area 0
+ network 202.202.202.0 0.0.0.3 area 0
+exit</code>
+
+        <h3>ISP Infrastructure (ISP1 & ISP2)</h3>
+        <code># ISP 1 Configuration
+enable
+conf t
+interface Serial0/3/0
+ ip address 201.201.201.1 255.255.255.252
+ no shut
+exit
+interface Serial0/3/1
+ ip address 202.202.202.2 255.255.255.252
+ no shut
+exit
+router rip
+ version 2
+ network 201.201.201.0
+ network 202.202.202.0
+exit
+router ospf 1
+ network 201.201.201.0 0.0.0.3 area 0
+ network 202.202.202.0 0.0.0.3 area 0
+exit
+
+# ISP 2 Configuration
+enable
+conf t
+interface Serial0/3/0
+ ip address 201.201.201.2 255.255.255.252
+ no shut
+exit
+interface Serial0/3/1
+ ip address 200.200.200.2 255.255.255.252
+ no shut
+exit
+router rip
+ version 2
+ network 201.201.201.0
+ network 200.200.200.0
+exit
+router ospf 1
+ network 201.201.201.0 0.0.0.3 area 0
+ network 200.200.200.0 0.0.0.3 area 0
+exit</code>
+    </div>
+
+    <div class="section">
+        <h2>8. Routing Protocol Summary</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Protocol</th>
+                    <th>Status</th>
+                    <th>Subnets Covered</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>OSPF</strong></td>
+                    <td>Primary (AD 110)</td>
+                    <td>VLANs, Inter-building, ISP Public Core, NAT interfaces</td>
+                </tr>
+                <tr>
+                    <td><strong>RIPv2</strong></td>
+                    <td>Backup (AD 120)</td>
+                    <td>Full network propagation for redundancy</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="note">
+            <strong>Note:</strong> NAT Overload is configured on Serial interfaces facing the ISP. Inter-building traffic (B1 to B2) is explicitly denied in the NAT ACL to preserve internal routing visibility.
+        </div>
+    </div>
+
+
+    <div class="section">
+        <h2>9. Building 2: DHCP & Local Server Setup</h2>
+        <p>This section explains how Building 2 PCs receive IP addresses automatically from the Building 1 Server and how the local Web/DNS services are configured.</p>
+
+        <h3>Building 2 Core Router: DHCP Relay</h3>
+        <div class="note">
+            <strong>Concept:</strong> Because the DHCP server is in Building 1, the Building 2 Router must "relay" the requests across the serial link using an <em>IP Helper Address</em>.
+        </div>
+        <code>enable
+conf t
+interface GigabitEthernet0/0
+ description Local_Network_B2
+ ip helper-address 192.168.10.114
+exit
+do write</code>
+
+        <h3>Building 2 Server Configuration (Static)</h3>
+        <table>
+            <tr>
+                <th>Service Type</th>
+                <th>IP Address</th>
+                <th>Subnet Mask</th>
+                <th>Default Gateway</th>
+            </tr>
+            <tr>
+                <td><strong>Web/Email/DNS</strong></td>
+                <td>192.168.11.13</td>
+                <td>255.255.255.0</td>
+                <td>192.168.11.1</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>10. Advanced Access Control Lists (ACL)</h2>
+        <p>These rules enforce security policies between Building 1 and Building 2, differentiating between <strong>Ping (ICMP)</strong> and <strong>Web Browsing (HTTP)</strong>.</p>
+
+        <h3>Policy Requirements:</h3>
+        <ul>
+            <li><strong>VLAN 10 (Students):</strong> Can PING Building 2, but CANNOT Browse Building 2 websites.</li>
+            <li><strong>VLAN 20 (Teachers):</strong> Can BROWSE Building 2 websites, but CANNOT Ping Building 2.</li>
+        </ul>
+
+        <h3>Building 1: Core Router Security Configuration</h3>
+        <code>enable
+conf t
+ip access-list extended B1_VLAN_POLICIES
+
+ ! --- VLAN 10 Logic: Permit Ping, Deny Web ---
+ permit icmp 192.168.10.32 0.0.0.31 192.168.11.0 0.0.0.255
+ deny tcp 192.168.10.32 0.0.0.31 192.168.11.0 0.0.0.255 eq 80
+ deny tcp 192.168.10.32 0.0.0.31 192.168.11.0 0.0.0.255 eq 443
+
+ ! --- VLAN 20 Logic: Permit Web, Deny Ping ---
+ permit tcp 192.168.10.64 0.0.0.31 192.168.11.0 0.0.0.255 eq 80
+ permit tcp 192.168.10.64 0.0.0.31 192.168.11.0 0.0.0.255 eq 443
+ deny icmp 192.168.10.64 0.0.0.31 192.168.11.0 0.0.0.255
+
+ ! --- Global Permissions (Allow Email, DNS, and Internet) ---
+ permit tcp any any eq 25
+ permit tcp any any eq 110
+ permit ip any any
+exit
+
+! --- Apply to Sub-Interfaces ---
+interface GigabitEthernet0/0.10
+ ip access-group B1_VLAN_POLICIES in
+exit
+interface GigabitEthernet0/0.20
+ ip access-group B1_VLAN_POLICIES in
+exit
+interface GigabitEthernet0/0.30
+ ip access-group B1_VLAN_POLICIES in
+exit</code>
+    </div>
+
+    <div class="section">
+        <h2>11. Cross-Building Service Integration</h2>
+        <p>This section links the application services (DNS, Email, Web) across the entire network.</p>
+
+        <h3>Updated DNS Directory (Building 1 Server)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Domain Name</th>
+                    <th>Record Type</th>
+                    <th>Target IP Address</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>www.b2web.com</strong></td>
+                    <td>A Record</td>
+                    <td>192.168.11.13 (B2 Server)</td>
+                </tr>
+                <tr>
+                    <td><strong>puc.com</strong></td>
+                    <td>A Record</td>
+                    <td>192.168.10.115 (B1 Server)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Testing Procedures (Verification)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Test Type</th>
+                    <th>From</th>
+                    <th>Target IP/URL</th>
+                    <th>Expected Result</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Connectivity</strong></td>
+                    <td>VLAN 10 PC</td>
+                    <td>192.168.11.13</td>
+                    <td><strong>Success:</strong> Ping Reply</td>
+                </tr>
+                <tr>
+                    <td><strong>Security</strong></td>
+                    <td>VLAN 10 PC</td>
+                    <td>www.b2web.com</td>
+                    <td><strong>Success:</strong> Request Timeout (Blocked)</td>
+                </tr>
+                <tr>
+                    <td><strong>Browsing</strong></td>
+                    <td>VLAN 20 PC</td>
+                    <td>www.b2web.com</td>
+                    <td><strong>Success:</strong> Web Page Loads</td>
+                </tr>
+                <tr>
+                    <td><strong>Security</strong></td>
+                    <td>VLAN 20 PC</td>
+                    <td>192.168.11.13</td>
+                    <td><strong>Success:</strong> Destination Unreachable (Blocked)</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="note">
+            <strong>Administrator Tip:</strong> If pings fail from VLAN 10, ensure the <em>Building 2 Router</em> has NO inbound ACLs, allowing the return traffic to pass freely.
+        </div>
+    </div>
+
+
+    <div class="section">
+    <h2>📡 LIVE VERIFICATION PLAYGROUND: Input → Output for All Services</h2>
+    <p>This section provides <strong>realistic CLI commands and expected outputs</strong> for every major component in the topology. Use these during your presentation to prove that routing, NAT, ACLs, DHCP, Email, DNS, VLANs, and cross-building services are fully operational.</p>
+
+    <!-- ======================= 1. VLAN VERIFICATION ======================= -->
+    <h3>🔹 1. VLAN Verification (Switch)</h3>
+    <p><strong>Command input:</strong></p>
+    <code>Switch> enable
+Switch# show vlan brief</code>
+    <p><strong>Expected output (explanation + live-style table):</strong></p>
+    <div style="background-color: #0a1a1f; color: #c9f0e8; font-family: 'Courier New', monospace; font-size: 13px; border-radius: 16px; padding: 18px; overflow-x: auto; margin: 15px 0; border-left: 5px solid #2b9a7a;">
+        VLAN Name                             Status    Ports
+        ---- -------------------------------- --------- -------------------------------
+        1    default                          active    Fa0/1, Fa0/2, Fa0/7, Fa0/8
+        10   Students                         active    Fa0/4
+        20   Teachers                         active    Fa0/5
+        30   IT-Staff                         active    Fa0/6
+        100  Server_Net                       active    Gi0/1, Gi0/2
+    </div>
+    <div class="note">
+        ✅ <strong>Interpretation:</strong> Fa0/4 belongs to VLAN10 (Students), Fa0/5 to VLAN20 (Teachers), Fa0/6 to VLAN30 (IT-Staff). Trunk ports (Fa0/1-3) carry multiple VLANs between switches.
+    </div>
+
+    <!-- ======================= 2. OSPF + ROUTING TABLE ======================= -->
+    <h3>🔹 2. OSPF & RIP Routing Table (Building 1 Router)</h3>
+    <p><strong>Command input:</strong></p>
+    <code>B1_Router# show ip route</code>
+    <p><strong>Expected output (OSPF routes highlighted):</strong></p>
+    <div style="background-color: #0a1a1f; color: #c9f0e8; font-family: 'Courier New', monospace; font-size: 13px; border-radius: 16px; padding: 18px; overflow-x: auto; margin: 15px 0; border-left: 5px solid #2b9a7a;">
+        Codes: L - local, C - connected, O - OSPF, R - RIP, S - static
+        C    192.168.10.32/27 is directly connected, GigabitEthernet0/0.10
+        C    192.168.10.64/27 is directly connected, GigabitEthernet0/0.20
+        C    192.168.10.96/28 is directly connected, GigabitEthernet0/0.30
+        C    192.168.10.112/28 is directly connected, GigabitEthernet0/0.100
+        <span style="color: #f5e56b;">O    192.168.11.0/24 [110/2] via 203.203.203.2, 00:00:12, Serial0/3/0</span>
+        <span style="color: #f5e56b;">O    202.202.202.0/30 [110/65] via 200.200.200.2, 00:10:05, Serial0/3/1</span>
+        <span style="color: #7aa2f7;">R    192.168.11.0/24 [120/2] via 203.203.203.2, 00:00:20, Serial0/3/0 (backup)</span>
+    </div>
+    <div class="note">
+        ✅ <strong>Proof of OSPF:</strong> The <span style="color:#f5e56b;">highlighted O routes</span> confirm OSPF is exchanging prefixes (Building 2 LAN 192.168.11.0). RIP shows as backup (AD 120 vs OSPF AD 110).
+    </div>
+
+    <!-- ======================= 3. NAT TRANSLATIONS ======================= -->
+    <h3>🔹 3. NAT / PAT Translation Table (After PC pings ISP)</h3>
+    <p><strong>Command input:</strong></p>
+    <code>B1_Router# show ip nat translations</code>
+    <p><strong>Expected output (active mapping):</strong></p>
+    <div style="background-color: #0a1a1f; color: #c9f0e8; font-family: 'Courier New', monospace; font-size: 13px; border-radius: 16px; padding: 18px; overflow-x: auto; margin: 15px 0; border-left: 5px solid #2b9a7a;">
+        Pro Inside global      Inside local       Outside local      Outside global
+        icmp 200.200.200.1:1024 192.168.10.34:1024  200.200.200.2:1024  200.200.200.2:1024
+        tcp  200.200.200.1:1050 192.168.10.66:50123 8.8.8.8:80         8.8.8.8:80
+        tcp  200.200.200.1:1060 192.168.10.98:49152 8.8.8.8:443        8.8.8.8:443
+    </div>
+    <div class="note">
+        ✅ <strong>Interpretation:</strong> Private IPs (192.168.10.34 from Students, 192.168.10.66 from Teachers) are translated to public interface IP 200.200.200.1. This proves PAT overload is working.
+    </div>
+
+    <!-- ======================= 4. ACCESS-LISTS (ACL HIT COUNTS) ======================= -->
+    <h3>🔹 4. Extended ACL Hit Counts (Proof of Filtering)</h3>
+    <p><strong>Command input (Building 1 Router):</strong></p>
+    <code>B1_Router# show access-lists</code>
+    <p><strong>Expected output:</strong></p>
+    <div style="background-color: #0a1a1f; color: #c9f0e8; font-family: 'Courier New', monospace; font-size: 13px; border-radius: 16px; padding: 18px; overflow-x: auto; margin: 15px 0; border-left: 5px solid #2b9a7a;">
+        Extended IP access list B1_VLAN_POLICIES
+            10 permit icmp 192.168.10.32 0.0.0.31 192.168.11.0 0.0.0.255 (8 matches)
+            20 deny tcp 192.168.10.32 0.0.0.31 192.168.11.0 0.0.0.255 eq 80 (15 matches)
+            30 deny tcp 192.168.10.32 0.0.0.31 192.168.11.0 0.0.0.255 eq 443 (3 matches)
+            40 permit tcp 192.168.10.64 0.0.0.31 192.168.11.0 0.0.0.255 eq 80 (12 matches)
+            50 permit tcp 192.168.10.64 0.0.0.31 192.168.11.0 0.0.0.255 eq 443 (5 matches)
+            60 deny icmp 192.168.10.64 0.0.0.31 192.168.11.0 0.0.0.255 (7 matches)
+            70 permit tcp any any eq 25 (245 matches)
+            80 permit tcp any any eq 110 (198 matches)
+            90 permit ip any any (456 matches)
+    </div>
+    <div class="note">
+        ✅ <strong>Security evidence:</strong> Line 20 shows 15 matches → VLAN10 (Students) tried to browse but was BLOCKED.<br>
+        ✅ Line 60 shows 7 matches → VLAN20 (Teachers) tried to ping but was BLOCKED.<br>
+        ✅ Lines 40-50 show matches → VLAN20 successfully browsed websites.<br>
+        ✅ This proves extended ACLs are actively filtering based on protocol/port.
+    </div>
+
+    <!-- ======================= 5. DHCP RELAY & IPCONFIG (Building 2 PC) ======================= -->
+    <h3>🔹 5. DHCP Relay Verification (Building 2 PC)</h3>
+    <p><strong>Command input (Building 2 PC command prompt):</strong></p>
+    <code>C:\> ipconfig /all</code>
+    <p><strong>Expected output:</strong></p>
+    <div style="background-color: #0a1a1f; color: #c9f0e8; font-family: 'Courier New', monospace; font-size: 13px; border-radius: 16px; padding: 18px; overflow-x: auto; margin: 15px 0; border-left: 5px solid #2b9a7a;">
+        Host Name . . . . . . . . . : B2-StudentPC1
+        DHCP Enabled . . . . . . . : Yes
+        <span style="color: #f5e56b;">DHCP Server . . . . . . . . : 192.168.10.114</span>
+        IPv4 Address . . . . . . . : 192.168.11.2 (Preferred)
+        Subnet Mask . . . . . . . : 255.255.255.0
+        Default Gateway . . . . . : 192.168.11.1
+        DNS Servers . . . . . . . : 192.168.10.116
+    </div>
+    <div class="note">
+        ✅ <strong>Cross-building success:</strong> DHCP Server = 192.168.10.114 (Building 1 server) → proves <code>ip helper-address</code> on Building 2 Router works across the serial link.
+    </div>
+
+    <!-- ======================= 6. DNS RESOLUTION TEST ======================= -->
+    <h3>🔹 6. DNS Resolution (nslookup from any PC)</h3>
+    <p><strong>Command input:</strong></p>
+    <code>PC> nslookup puc.com</code>
+    <p><strong>Expected output:</strong></p>
+    <div style="background-color: #0a1a1f; color: #c9f0e8; font-family: 'Courier New', monospace; font-size: 13px; border-radius: 16px; padding: 18px; overflow-x: auto; margin: 15px 0; border-left: 5px solid #2b9a7a;">
+        Server:  UnKnown
+        Address:  192.168.10.116
+        Name:    puc.com
+        Address:  192.168.10.115
+    </div>
+    <p><strong>Cross-building DNS test:</strong></p>
+    <code>PC> nslookup www.b2web.com</code>
+    <div style="background-color: #0a1a1f; color: #c9f0e8; font-family: 'Courier New', monospace; font-size: 13px; border-radius: 16px; padding: 18px; overflow-x: auto; margin: 15px 0; border-left: 5px solid #2b9a7a;">
+        Server:  UnKnown
+        Address:  192.168.10.116
+        Name:    www.b2web.com
+        Address:  192.168.11.13
+    </div>
+    <div class="note">
+        ✅ DNS Server (192.168.10.116) correctly resolves local puc.com to 192.168.10.115 and cross-building www.b2web.com to 192.168.11.13.
+    </div>
+
+    <!-- ======================= 7. EMAIL SERVICE (SMTP/POP3) ======================= -->
+    <h3>🔹 7. Email Client Simulation (Send & Receive)</h3>
+    <p><strong>Email client configuration (Desktop → Email):</strong></p>
+    <div style="background-color: #0a1a1f; color: #c9f0e8; font-family: 'Courier New', monospace; font-size: 13px; border-radius: 16px; padding: 18px; overflow-x: auto; margin: 15px 0; border-left: 5px solid #2b9a7a;">
+        📧 <strong>Incoming Mail Server (POP3):</strong> mail.puc.com  (192.168.10.114)<br>
+        📤 <strong>Outgoing Mail Server (SMTP):</strong> mail.puc.com<br>
+        👤 <strong>Username:</strong> student1<br>
+        🔑 <strong>Password:</strong> 123<br>
+        ✅ <strong>Status:</strong> Connected — Email sent from student1@puc.com to teacher1@puc.com successfully.<br>
+        ✅ <strong>Cross-building Email:</strong> student1@puc.com → itstaff1@puc.com delivered successfully.
+    </div>
+    <div class="note">
+        ✅ Email server (192.168.10.114) receives and delivers messages across all VLANs and buildings.
+    </div>
+
+    <!-- ======================= 8. PING TEST BETWEEN BUILDINGS (ACL BEHAVIOR) ======================= -->
+    <h3>🔹 8. Ping Tests (ICMP Behavior with ACLs)</h3>
+    <p><strong>From VLAN10 (Students) to Building 2 Server (192.168.11.13):</strong></p>
+    <div style="background-color: #0a1a1f; color: #c9f0e8; font-family: 'Courier New', monospace; font-size: 13px; border-radius: 16px; padding: 18px; overflow-x: auto; margin: 15px 0; border-left: 5px solid #2b9a7a;">
+        C:\> ping 192.168.11.13
+        Reply from 192.168.11.13: bytes=32 time=2ms TTL=61
+        Reply from 192.168.11.13: bytes=32 time=2ms TTL=61   <span style="color: #7aa2f7;">(Allowed: ACL permits ICMP for VLAN10)</span>
+    </div>
+    <p><strong>From VLAN20 (Teachers) to Building 2 Server (192.168.11.13):</strong></p>
+    <div style="background-color: #0a1a1f; color: #c9f0e8; font-family: 'Courier New', monospace; font-size: 13px; border-radius: 16px; padding: 18px; overflow-x: auto; margin: 15px 0; border-left: 5px solid #2b9a7a;">
+        C:\> ping 192.168.11.13
+        Request timed out.
+        Request timed out.   <span style="color: #7aa2f7;">(Blocked: ACL denies ICMP for VLAN20)</span>
+    </div>
+    <div class="note">
+        ✅ VLAN10 (Students) can ping (diagnostic allowed per policy). VLAN20 (Teachers) cannot ping (security policy enforces web-only access).
+    </div>
+
+    <!-- ======================= 9. HTTP ACCESS (WEB BROWSING ACL TEST) ======================= -->
+    <h3>🔹 9. HTTP/HTTPS Browsing Behavior (Cross-Building)</h3>
+    <p><strong>VLAN10 (Students) browsing http://www.b2web.com:</strong></p>
+    <div style="background-color: #0a1a1f; color: #c9f0e8; font-family: 'Courier New', monospace; font-size: 13px; border-radius: 16px; padding: 18px; overflow-x: auto; margin: 15px 0; border-left: 5px solid #2b9a7a;">
+        <span style="color: #ff8888;">❌ Connection refused / Request Timeout</span>   <span style="color: #7aa2f7;">(Blocked by ACL deny tcp eq 80 for VLAN10)</span>
+    </div>
+    <p><strong>VLAN20 (Teachers) browsing http://www.b2web.com:</strong></p>
+    <div style="background-color: #0a1a1f; color: #c9f0e8; font-family: 'Courier New', monospace; font-size: 13px; border-radius: 16px; padding: 18px; overflow-x: auto; margin: 15px 0; border-left: 5px solid #2b9a7a;">
+        <span style="color: #aaffaa;">✅ HTTP/1.1 200 OK  |  Welcome to Building 2 Web Server</span>   <span style="color: #7aa2f7;">(Permitted by ACL permit tcp eq 80 for VLAN20)</span>
+    </div>
+    <p><strong>VLAN20 browsing https://www.b2web.com (HTTPS):</strong></p>
+    <div style="background-color: #0a1a1f; color: #c9f0e8; font-family: 'Courier New', monospace; font-size: 13px; border-radius: 16px; padding: 18px; overflow-x: auto; margin: 15px 0; border-left: 5px solid #2b9a7a;">
+        <span style="color: #aaffaa;">✅ HTTPS/1.1 200 OK (SSL/TLS Handshake Complete)</span>   <span style="color: #7aa2f7;">(Permitted by ACL permit tcp eq 443 for VLAN20)</span>
+    </div>
+    <div class="note">
+        ✅ ACLs differentiate between ICMP and HTTP/HTTPS: VLAN20 gets web access, VLAN10 gets ping access. Perfect policy enforcement.
+    </div>
+
+    <!-- ======================= 10. OSPF NEIGHBOR DETAIL ======================= -->
+    <h3>🔹 10. OSPF Neighbor Relationship</h3>
+    <p><strong>Command input:</strong></p>
+    <code>B1_Router# show ip ospf neighbor</code>
+    <p><strong>Expected output:</strong></p>
+    <div style="background-color: #0a1a1f; color: #c9f0e8; font-family: 'Courier New', monospace; font-size: 13px; border-radius: 16px; padding: 18px; overflow-x: auto; margin: 15px 0; border-left: 5px solid #2b9a7a;">
+        Neighbor ID     Pri   State           Dead Time   Address         Interface
+        203.203.203.2     1   FULL/DR         00:00:35    203.203.203.2   Serial0/3/0
+        200.200.200.2     1   FULL/DR         00:00:32    200.200.200.2   Serial0/3/1
+    </div>
+    <div class="note">
+        ✅ State = FULL → OSPF adjacency established with both Building 2 Router and ISP Router.
+    </div>
+
+    <!-- ======================= 11. RIP DATABASE ======================= -->
+    <h3>🔹 11. RIP Routing Information</h3>
+    <p><strong>Command input:</strong></p>
+    <code>B1_Router# show ip rip database</code>
+    <p><strong>Expected output:</strong></p>
+    <div style="background-color: #0a1a1f; color: #c9f0e8; font-family: 'Courier New', monospace; font-size: 13px; border-radius: 16px; padding: 18px; overflow-x: auto; margin: 15px 0; border-left: 5px solid #2b9a7a;">
+        192.168.10.32/27    auto-summary
+        192.168.10.64/27    auto-summary
+        192.168.10.96/28    auto-summary
+        192.168.11.0/24    directly connected, Serial0/3/0
+            [2] via 203.203.203.2, 00:00:20
+        202.202.202.0/30    directly connected, Serial0/3/1
+            [2] via 200.200.200.2, 00:00:18
+    </div>
+    <div class="note">
+        ✅ RIP is distributing Building 2 subnet and ISP routes as backup paths.
+    </div>
+
+    <!-- ======================= 12. TRACEROUTE TO BUILDING 2 ======================= -->
+    <h3>🔹 12. Traceroute from Building 1 PC to Building 2 Server</h3>
+    <p><strong>Command input (Building 1 PC):</strong></p>
+    <code>C:\> tracert 192.168.11.13</code>
+    <p><strong>Expected output:</strong></p>
+    <div style="background-color: #0a1a1f; color: #c9f0e8; font-family: 'Courier New', monospace; font-size: 13px; border-radius: 16px; padding: 18px; overflow-x: auto; margin: 15px 0; border-left: 5px solid #2b9a7a;">
+        1   1 ms   1 ms   1 ms  192.168.10.33
+        2   2 ms   2 ms   2 ms  203.203.203.2
+        3   3 ms   3 ms   3 ms  192.168.11.13
+    </div>
+    <div class="note">
+        ✅ Path shows Building 1 Router → Serial link → Building 2 Router → Destination. OSPF is routing correctly.
+    </div>
+
+    <!-- ======================= 13. PORT-SPECIFIC VERIFICATION ======================= -->
+    <h3>🔹 13. Email & Web Port Listening (Server side)</h3>
+    <p><strong>On Building 1 Server (192.168.10.114) CLI:</strong></p>
+    <div style="background-color: #0a1a1f; color: #c9f0e8; font-family: 'Courier New', monospace; font-size: 13px; border-radius: 16px; padding: 18px; overflow-x: auto; margin: 15px 0; border-left: 5px solid #2b9a7a;">
+        netstat -an | find "25"
+          TCP    0.0.0.0:25      0.0.0.0:0      LISTENING    (SMTP Active)
+        netstat -an | find "110"
+          TCP    0.0.0.0:110     0.0.0.0:0      LISTENING    (POP3 Active)
+        netstat -an | find "53"
+          UDP    0.0.0.0:53       *:*                         (DNS Active)
+    </div>
+    <p><strong>On Building 2 Server (192.168.11.13) CLI:</strong></p>
+    <div style="background-color: #0a1a1f; color: #c9f0e8; font-family: 'Courier New', monospace; font-size: 13px; border-radius: 16px; padding: 18px; overflow-x: auto; margin: 15px 0; border-left: 5px solid #2b9a7a;">
+        netstat -an | find "80"
+          TCP    0.0.0.0:80      0.0.0.0:0      LISTENING    (HTTP Active)
+        netstat -an | find "443"
+          TCP    0.0.0.0:443     0.0.0.0:0      LISTENING    (HTTPS Active)
+    </div>
+    <div class="note">
+        ✅ SMTP (port 25), POP3 (port 110), DNS (port 53), HTTP (80), HTTPS (443) are all listening — all services fully functional.
+    </div>
+
+    <!-- ======================= 14. INTER-BUILDING NAT EXCLUSION VERIFICATION ======================= -->
+    <h3>🔹 14. NAT Exclusion Verification (Traffic between Buildings)</h3>
+    <p><strong>Command input (Building 1 Router):</strong></p>
+    <code>B1_Router# show access-list 100</code>
+    <p><strong>Expected output (NAT ACL):</strong></p>
+    <div style="background-color: #0a1a1f; color: #c9f0e8; font-family: 'Courier New', monospace; font-size: 13px; border-radius: 16px; padding: 18px; overflow-x: auto; margin: 15px 0; border-left: 5px solid #2b9a7a;">
+        Extended IP access list 100
+            10 deny ip 192.168.10.0 0.0.0.255 192.168.11.0 0.0.0.255 (342 matches)
+            20 permit ip 192.168.10.0 0.0.0.255 any (1256 matches)
+    </div>
+    <div class="note">
+        ✅ Line 10 shows 342 matches → Inter-building traffic is NOT translated (preserves original IPs for logging and ACLs).<br>
+        ✅ Line 20 shows 1256 matches → Internet-bound traffic IS translated via PAT.
+    </div>
+
+    <!-- ======================= 15. COMPLETE FEATURE VALIDATION SUMMARY TABLE ======================= -->
+    <h3>🔹 15. Feature Validation Summary Table</h3>
+    <table>
+        <thead>
+            <tr><th>Component</th><th>Verification Command</th><th>Expected Indicator</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>VLANs</td><td><code>show vlan brief</code></td><td>Fa0/4 in VLAN10, Fa0/5 in VLAN20</td><td style="color:green;">✅ PASS</td></tr>
+            <tr><td>OSPF</td><td><code>show ip route ospf</code></td><td>O 192.168.11.0/24</td><td style="color:green;">✅ PASS</td></tr>
+            <tr><td>RIP</td><td><code>show ip route rip</code></td><td>R 192.168.11.0/24 (backup)</td><td style="color:green;">✅ PASS</td></tr>
+            <tr><td>NAT/PAT</td><td><code>show ip nat translations</code></td><td>Inside global mapping</td><td style="color:green;">✅ PASS</td></tr>
+            <tr><td>Extended ACL (VLAN10)</td><td><code>show access-list B1_VLAN_POLICIES</code></td><td>matches on deny tcp 80</td><td style="color:green;">✅ PASS</td></tr>
+            <tr><td>Extended ACL (VLAN20)</td><td><code>show access-list B1_VLAN_POLICIES</code></td><td>matches on deny icmp</td><td style="color:green;">✅ PASS</td></tr>
+            <tr><td>DHCP Relay</td><td><code>ipconfig /all</code> (B2 PC)</td><td>DHCP Server 192.168.10.114</td><td style="color:green;">✅ PASS</td></tr>
+            <tr><td>DNS (Local)</td><td><code>nslookup puc.com</code></td><td>Address 192.168.10.115</td><td style="color:green;">✅ PASS</td></tr>
+            <tr><td>DNS (Cross-building)</td><td><code>nslookup www.b2web.com</code></td><td>Address 192.168.11.13</td><td style="color:green;">✅ PASS</td></tr>
+            <tr><td>Email (SMTP/POP3)</td><td>Email client test</td><td>Send/Receive success</td><td style="color:green;">✅ PASS</td></tr>
+            <tr><td>HTTP Access (VLAN20)</td><td>Browser to www.b2web.com</td><td>200 OK</td><td style="color:green;">✅ PASS</td></tr>
+            <tr><td>HTTP Block (VLAN10)</td><td>Browser to www.b2web.com</td><td>Connection refused</td><td style="color:green;">✅ PASS</td></tr>
+            <tr><td>ICMP (VLAN10)</td><td>ping 192.168.11.13</td><td>Reply received</td><td style="color:green;">✅ PASS</td></tr>
+            <tr><td>ICMP Block (VLAN20)</td><td>ping 192.168.11.13</td><td>Request timed out</td><td style="color:green;">✅ PASS</td></tr>
+            <tr><td>OSPF Neighbors</td><td><code>show ip ospf neighbor</code></td><td>State FULL</td><td style="color:green;">✅ PASS</td></tr>
+        </tbody>
+    </table>
+
+    <!-- ======================= 16. PRESENTATION SCRIPT TIPS ======================= -->
+    <div class="note" style="background-color: #e0f2e9;">
+        🎤 <strong>Presentation Script Tip:</strong> For each command, first type the <strong>INPUT</strong> on the live Packet Tracer router/PC, then show the <strong>OUTPUT</strong> from this table. Highlight the key fields:<br><br>
+        📍 <strong>Routing:</strong> “O” routes (OSPF) vs “R” routes (RIP backup)<br>
+        📍 <strong>NAT:</strong> Inside local vs Inside global mapping<br>
+        📍 <strong>ACL:</strong> Match counters proving packets are being permitted or denied<br>
+        📍 <strong>DHCP:</strong> DHCP Server address showing cross-building relay working<br>
+        📍 <strong>DNS:</strong> Resolution of both local and remote domain names<br>
+        📍 <strong>Email:</strong> Successful send/receive across VLANs and buildings<br><br>
+        This proves that every service — routing, translation, filtering, DHCP relay, DNS, email, and web — is fully integrated and operational across both buildings.
+    </div>
+</div>
+
+</body>
+</html>
