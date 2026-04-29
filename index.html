@@ -2,10 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Computer Networks Lab - Complete hands-on labs for VLAN, Inter-VLAN Routing, RIP, OSPF, Application Layer Services, and Smart Home IoT Controller By Nazmul Islam Abir">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="description" content="Computer Networks Lab - Complete hands-on labs for VLAN, Routing, Application Layer, IoT, and Full Enterprise Scenarios">
     <meta name="author" content="Nazmul Islam Abir">
-    <title>Computer Networks Lab | Hands-on Networking Labs</title>
+    <title>Computer Networks Lab | CSE Department</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -14,97 +15,199 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f7fa;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f4f7fc;
             color: #1a2c3e;
             line-height: 1.5;
+            scroll-behavior: smooth;
         }
 
+        /* ========== UNIFIED NAVBAR (NO LAG) ========== */
+        .navbar {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0.85rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            text-decoration: none;
+        }
+
+        .brand-icon {
+            font-size: 1.6rem;
+            background: linear-gradient(135deg, #0f3b4f, #1a5f7a);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+        }
+
+        .brand-text {
+            font-weight: 700;
+            font-size: 1.35rem;
+            background: linear-gradient(135deg, #0a2a3b, #1d5a77);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .brand-sub {
+            font-size: 0.7rem;
+            font-weight: 400;
+            color: #5f7f9a;
+        }
+
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0.6rem 1.1rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+            border-radius: 60px;
+            text-decoration: none;
+            color: #1f3b4c;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .nav-link:hover {
+            background: #eef3fc;
+            color: #0b4f6c;
+        }
+
+        .nav-link.active {
+            background: #0f3b4f;
+            color: white;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            width: 44px;
+            height: 44px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hamburger {
+            width: 26px;
+            height: 2px;
+            background: #1f3b4c;
+            position: relative;
+            transition: all 0.3s;
+        }
+        .hamburger::before, .hamburger::after {
+            content: '';
+            position: absolute;
+            width: 26px;
+            height: 2px;
+            background: #1f3b4c;
+            transition: all 0.3s;
+        }
+        .hamburger::before { top: -8px; }
+        .hamburger::after { bottom: -8px; }
+        .menu-toggle.active .hamburger { background: transparent; }
+        .menu-toggle.active .hamburger::before { transform: rotate(45deg); top: 0; }
+        .menu-toggle.active .hamburger::after { transform: rotate(-45deg); bottom: 0; }
+
+        @media (max-width: 1100px) {
+            .nav-menu { gap: 0.1rem; }
+            .nav-link { padding: 0.5rem 0.8rem; font-size: 0.8rem; }
+        }
+        @media (max-width: 950px) {
+            .menu-toggle { display: flex; }
+            .nav-menu {
+                position: fixed;
+                left: -100%;
+                top: 70px;
+                flex-direction: column;
+                background: rgba(255, 255, 255, 0.98);
+                backdrop-filter: blur(12px);
+                width: 100%;
+                transition: 0.3s ease;
+                box-shadow: 0 20px 30px -12px rgba(0,0,0,0.1);
+                padding: 1.5rem;
+                gap: 0.5rem;
+                border-radius: 0 0 28px 28px;
+                z-index: 999;
+                max-height: 80vh;
+                overflow-y: auto;
+            }
+            .nav-menu.active { left: 0; }
+            .nav-link { justify-content: center; padding: 0.8rem; width: 100%; white-space: normal; font-size: 0.95rem; }
+        }
+
+        /* MAIN CONTAINER */
         .container {
-            max-width: 1200px;
+            max-width: 1280px;
             margin: 0 auto;
             padding: 2rem;
         }
 
-        /* Header */
         .main-header {
             background: linear-gradient(135deg, #0a2a3b 0%, #0f3b4f 100%);
-            border-radius: 28px;
+            border-radius: 32px;
             padding: 3rem 2rem;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
             color: white;
             text-align: center;
         }
 
-        .main-header h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            letter-spacing: -0.02em;
-        }
+        .main-header h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .main-header p { font-size: 1.2rem; opacity: 0.9; margin-bottom: 1.5rem; }
+        .header-badges { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+        .badge { background: rgba(255,255,255,0.2); padding: 0.5rem 1.2rem; border-radius: 40px; font-size: 0.85rem; }
 
-        .main-header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-            margin-bottom: 1.5rem;
-        }
-
-        .header-badges {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .badge {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 0.5rem 1.2rem;
-            border-radius: 40px;
-            font-size: 0.85rem;
-            backdrop-filter: blur(4px);
-        }
-
-        /* Stats Section */
         .stats-section {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 1.5rem;
             margin-bottom: 3rem;
         }
-
         .stat-card {
             background: white;
-            border-radius: 20px;
+            border-radius: 24px;
             padding: 1.5rem;
             text-align: center;
             border: 1px solid #e1e8f0;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s;
         }
+        .stat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.08); }
+        .stat-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .stat-number { font-size: 2rem; font-weight: 700; color: #0f3b4f; }
+        .stat-label { font-size: 0.85rem; color: #6b7a8a; text-transform: uppercase; }
 
-        .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
-        }
-
-        .stat-icon {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-number {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #0f3b4f;
-        }
-
-        .stat-label {
-            font-size: 0.85rem;
-            color: #6b7a8a;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        /* Labs Grid */
         .section-title {
             font-size: 1.8rem;
             font-weight: 600;
@@ -114,7 +217,6 @@
             align-items: center;
             gap: 0.8rem;
         }
-
         .section-title span {
             background: #0f3b4f;
             width: 40px;
@@ -124,71 +226,31 @@
             align-items: center;
             justify-content: center;
             font-size: 1.3rem;
+            color: white;
         }
 
         .labs-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
             gap: 1.8rem;
             margin-bottom: 3rem;
         }
-
         .lab-card {
             background: white;
-            border-radius: 24px;
+            border-radius: 28px;
             border: 1px solid #e1e8f0;
             overflow: hidden;
             transition: all 0.3s ease;
             cursor: pointer;
         }
-
-        .lab-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 20px 30px -12px rgba(0, 0, 0, 0.15);
-            border-color: #cbd5e1;
-        }
-
-        .lab-card-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid #e1e8f0;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .lab-icon {
-            font-size: 2.5rem;
-        }
-
-        .lab-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: #0a2a3b;
-        }
-
-        .lab-subtitle {
-            font-size: 0.8rem;
-            color: #6b7a8a;
-            margin-top: 0.2rem;
-        }
-
-        .lab-card-body {
-            padding: 1.5rem;
-        }
-
-        .lab-description {
-            color: #4a5b6e;
-            margin-bottom: 1rem;
-            line-height: 1.6;
-        }
-
-        .lab-tech {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-bottom: 1.2rem;
-        }
-
+        .lab-card:hover { transform: translateY(-6px); box-shadow: 0 20px 30px -12px rgba(0,0,0,0.15); }
+        .lab-card-header { padding: 1.5rem; border-bottom: 1px solid #e1e8f0; display: flex; align-items: center; gap: 1rem; }
+        .lab-icon { font-size: 2.5rem; }
+        .lab-title { font-size: 1.2rem; font-weight: 600; color: #0a2a3b; }
+        .lab-subtitle { font-size: 0.75rem; color: #6b7a8a; margin-top: 0.2rem; }
+        .lab-card-body { padding: 1.5rem; }
+        .lab-description { color: #4a5b6e; margin-bottom: 1rem; font-size: 0.9rem; }
+        .lab-tech { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
         .tech-tag {
             background: #eef2f5;
             padding: 0.25rem 0.8rem;
@@ -197,7 +259,6 @@
             font-weight: 500;
             color: #0f3b4f;
         }
-
         .lab-link {
             display: inline-flex;
             align-items: center;
@@ -205,61 +266,17 @@
             color: #0f3b4f;
             font-weight: 600;
             text-decoration: none;
-            margin-top: 0.5rem;
-            transition: gap 0.2s;
         }
+        .lab-link:hover { gap: 0.8rem; }
 
-        .lab-link:hover {
-            gap: 0.8rem;
-        }
-
-        /* Features Section */
-        .features-section {
-            background: white;
-            border-radius: 28px;
-            padding: 2rem;
-            margin-bottom: 3rem;
-            border: 1px solid #e1e8f0;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-top: 1.5rem;
-        }
-
-        .feature-item {
-            text-align: center;
-            padding: 1rem;
-        }
-
-        .feature-icon {
-            font-size: 2rem;
-            margin-bottom: 0.8rem;
-        }
-
-        .feature-item h4 {
-            font-size: 1.1rem;
-            margin-bottom: 0.5rem;
-            color: #0a2a3b;
-        }
-
-        .feature-item p {
-            font-size: 0.9rem;
-            color: #6b7a8a;
-        }
-
-        /* Footer */
         .footer {
             margin-top: 2.5rem;
             background: #0a2a3b;
-            border-radius: 20px;
+            border-radius: 24px;
             padding: 2rem;
             color: #b0c4d4;
             text-align: center;
         }
-
         .footer-content {
             display: flex;
             justify-content: space-between;
@@ -268,286 +285,179 @@
             gap: 1rem;
             margin-bottom: 1rem;
         }
+        .creator-name { font-size: 1.3rem; font-weight: 600; color: white; }
+        .footer-links { display: flex; gap: 1.5rem; }
+        .footer-links a { color: #b0c4d4; text-decoration: none; }
+        .footer-links a:hover { color: white; }
+        .copyright { font-size: 0.8rem; border-top: 1px solid #1e5a6e; padding-top: 1rem; margin-top: 0.5rem; }
 
-        .creator-name {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: white;
-        }
-
-        .footer-links {
-            display: flex;
-            gap: 1.5rem;
-        }
-
-        .footer-links a {
-            color: #b0c4d4;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        .footer-links a:hover {
-            color: white;
-        }
-
-        .copyright {
-            font-size: 0.8rem;
-            border-top: 1px solid #1e5a6e;
-            padding-top: 1rem;
-            margin-top: 0.5rem;
-        }
-
-        /* Responsive */
         @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-            }
-            .stats-section {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 1rem;
-            }
-            .main-header h1 {
-                font-size: 1.8rem;
-            }
-            .section-title {
-                font-size: 1.4rem;
-            }
-            .labs-grid {
-                grid-template-columns: 1fr;
-            }
-            .footer-content {
-                flex-direction: column;
-                text-align: center;
-            }
+            .container { padding: 1rem; }
+            .stats-section { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+            .main-header h1 { font-size: 1.8rem; }
+            .section-title { font-size: 1.4rem; }
+            .labs-grid { grid-template-columns: 1fr; }
         }
-
-        @media (max-width: 480px) {
-            .stats-section {
-                grid-template-columns: 1fr;
-            }
-        }
+        @media (max-width: 480px) { .stats-section { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-    <!-- ========== NAVBAR INJECTION ========== -->
-<div id="navbar-container"></div>
-<script>
-    fetch('navbar.html')
-        .then(response => response.text())
-        .then(data => {
-            document.getElementById('navbar-container').innerHTML = data;
-            
-            // Re-run navbar's initialization after loading
-            if (typeof window.initNavbar === 'undefined') {
-                // Small delay to ensure DOM is ready
-                setTimeout(() => {
-                    const navScript = document.querySelector('#navbar-container script');
-                    if (navScript) {
-                        eval(navScript.textContent);
-                    }
-                }, 50);
-            }
-        })
-        .catch(error => console.error('Navbar loading error:', error));
-</script>
+<!-- ========== UNIFIED NAVBAR (ALL PAGES CONNECTED) ========== -->
+<div class="navbar">
+    <div class="nav-container">
+        <a href="index.html" class="nav-brand">
+            <div class="brand-icon">🌐</div>
+            <div class="brand-text">NetLab<span class="brand-sub"> · CSE</span></div>
+        </a>
+        <button class="menu-toggle" id="mobileMenuBtn"><div class="hamburger"></div></button>
+        <ul class="nav-menu" id="navMenu">
+            <li><a href="index.html" class="nav-link">🏠 Home</a></li>
+            <li><a href="vlan_subnet.html" class="nav-link">🔗 VLAN / Inter-VLAN</a></li>
+            <li><a href="ospf_rip.html" class="nav-link">🔁 RIP + OSPF</a></li>
+            <li><a href="applicationLayer.html" class="nav-link">📡 Application Layer</a></li>
+            <li><a href="smart_home.html" class="nav-link">🏠 Smart Home IoT</a></li>
+            <li><a href="lab_manual.html" class="nav-link">📖 Lab Manual</a></li>
+            <li><a href="tele-Communication.html" class="nav-link">📞 Telecommunication</a></li>
+            <li><a href="varsity building.html" class="nav-link">🏛️ Varsity Building</a></li>
+            <li><a href="service company.html" class="nav-link">🏢 Service Co.</a></li>
+            <li><a href="Library Floor.html" class="nav-link">📚 Library Floor</a></li>
+            <li><a href="It farm.html" class="nav-link">🌾 IT Farm</a></li>
+            <li><a href="Bank Branch.html" class="nav-link">🏦 Bank Branch</a></li>
+        </ul>
+    </div>
+</div>
+
 <div class="container">
-    <!-- Header -->
+    <!-- Hero Section -->
     <div class="main-header">
         <h1>🔬 Computer Networks Lab</h1>
-        <p>Hands-on Cisco Packet Tracer Labs | Routing · Switching · IoT · Application Layer</p>
+        <p>Complete Cisco Packet Tracer Labs | Routing · Switching · IoT · Enterprise Scenarios</p>
         <div class="header-badges">
-            <div class="badge">🎓 4 Complete Labs</div>
-            <div class="badge">🖧 4+ Routers</div>
-            <div class="badge">🔌 10+ Switches</div>
-            <div class="badge">🌐 15+ End Devices</div>
+            <div class="badge">🎓 11 Complete Labs</div>
+            <div class="badge">🖧 20+ Routers</div>
+            <div class="badge">🔌 30+ Switches</div>
+            <div class="badge">🌐 50+ End Devices</div>
         </div>
     </div>
 
     <!-- Stats -->
     <div class="stats-section">
-        <div class="stat-card">
-            <div class="stat-icon">📡</div>
-            <div class="stat-number">4</div>
-            <div class="stat-label">Network Labs</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon">🖧</div>
-            <div class="stat-number">10+</div>
-            <div class="stat-label">Routers & Switches</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon">💻</div>
-            <div class="stat-number">15+</div>
-            <div class="stat-label">End Devices</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon">📋</div>
-            <div class="stat-number">100%</div>
-            <div class="stat-label">Step-by-Step Guide</div>
-        </div>
+        <div class="stat-card"><div class="stat-icon">📡</div><div class="stat-number">11</div><div class="stat-label">Network Labs</div></div>
+        <div class="stat-card"><div class="stat-icon">🖧</div><div class="stat-number">20+</div><div class="stat-label">Routers & Switches</div></div>
+        <div class="stat-card"><div class="stat-icon">💻</div><div class="stat-number">50+</div><div class="stat-label">End Devices</div></div>
+        <div class="stat-card"><div class="stat-icon">📋</div><div class="stat-number">100%</div><div class="stat-label">Step-by-Step Guide</div></div>
     </div>
 
-    <!-- Labs Section -->
-    <div class="section-title">
-        <span>🧪</span> Available Labs
-    </div>
-
+    <!-- Core Labs Section -->
+    <div class="section-title"><span>🧪</span> Core Network Labs</div>
     <div class="labs-grid">
-        <!-- Lab 1: VLAN Inter-VLAN Routing -->
-        <div class="lab-card" onclick="window.location.href='vlan_subnet.html'">
-            <div class="lab-card-header">
-                <div class="lab-icon">🔗</div>
-                <div>
-                    <div class="lab-title">Inter-VLAN Routing</div>
-                    <div class="lab-subtitle">VLAN 10 · 11 · 12</div>
-                </div>
-            </div>
-            <div class="lab-card-body">
-                <div class="lab-description">
-                    Configure VLAN segmentation with Student, Teacher, and Staff networks. Implement Router-on-a-Stick with 802.1Q trunking for inter-VLAN communication.
-                </div>
-                <div class="lab-tech">
-                    <span class="tech-tag">VLAN 10</span>
-                    <span class="tech-tag">VLAN 11</span>
-                    <span class="tech-tag">VLAN 12</span>
-                    <span class="tech-tag">Router-on-a-Stick</span>
-                    <span class="tech-tag">Trunk Ports</span>
-                </div>
-                <a href="vlan_subnet.html" class="lab-link">View Lab →</a>
-            </div>
+        <div class="lab-card" data-url="vlan_subnet.html">
+            <div class="lab-card-header"><div class="lab-icon">🔗</div><div><div class="lab-title">Inter-VLAN Routing</div><div class="lab-subtitle">VLAN 10 · 11 · 12</div></div></div>
+            <div class="lab-card-body"><div class="lab-description">Router-on-a-Stick with 802.1Q trunking. Student, Teacher, Staff networks with VLSM subnetting /29.</div><div class="lab-tech"><span class="tech-tag">VLAN</span><span class="tech-tag">Trunking</span><span class="tech-tag">Subnetting</span></div><a href="vlan_subnet.html" class="lab-link">View Lab →</a></div>
         </div>
-
-        <!-- Lab 2: RIP + OSPF -->
-        <div class="lab-card" onclick="window.location.href='ospf_rip.html'">
-            <div class="lab-card-header">
-                <div class="lab-icon">🔁</div>
-                <div>
-                    <div class="lab-title">RIP + OSPF</div>
-                    <div class="lab-subtitle">Hybrid Routing</div>
-                </div>
-            </div>
-            <div class="lab-card-body">
-                <div class="lab-description">
-                    4-Router mesh topology running RIP v2 and OSPF simultaneously. Learn distance vector vs link-state routing, clock rates, and ACL filtering.
-                </div>
-                <div class="lab-tech">
-                    <span class="tech-tag">RIP v2</span>
-                    <span class="tech-tag">OSPF</span>
-                    <span class="tech-tag">Serial Mesh</span>
-                    <span class="tech-tag">ACL</span>
-                    <span class="tech-tag">AD 110/120</span>
-                </div>
-                <a href="ospf_rip.html" class="lab-link">View Lab →</a>
-            </div>
+        <div class="lab-card" data-url="ospf_rip.html">
+            <div class="lab-card-header"><div class="lab-icon">🔁</div><div><div class="lab-title">RIP + OSPF</div><div class="lab-subtitle">Hybrid Routing</div></div></div>
+            <div class="lab-card-body"><div class="lab-description">4-Router serial mesh running RIP v2 and OSPF simultaneously. Clock rates, AD values, ACL filtering.</div><div class="lab-tech"><span class="tech-tag">RIP v2</span><span class="tech-tag">OSPF</span><span class="tech-tag">Serial Mesh</span></div><a href="ospf_rip.html" class="lab-link">View Lab →</a></div>
         </div>
-
-        <!-- Lab 3: Application Layer Services -->
-        <div class="lab-card" onclick="window.location.href='applicationLayer.html'">
-            <div class="lab-card-header">
-                <div class="lab-icon">📡</div>
-                <div>
-                    <div class="lab-title">Application Layer</div>
-                    <div class="lab-subtitle">DHCP · DNS · HTTP · Email</div>
-                </div>
-            </div>
-            <div class="lab-card-body">
-                <div class="lab-description">
-                    Deploy full application layer services including DHCP server, DNS resolution, HTTP web server, and SMTP/POP3 email server with real user accounts.
-                </div>
-                <div class="lab-tech">
-                    <span class="tech-tag">DHCP</span>
-                    <span class="tech-tag">DNS</span>
-                    <span class="tech-tag">HTTP</span>
-                    <span class="tech-tag">SMTP/POP3</span>
-                    <span class="tech-tag">Email Client</span>
-                </div>
-                <a href="applicationLayer.html" class="lab-link">View Lab →</a>
-            </div>
+        <div class="lab-card" data-url="applicationLayer.html">
+            <div class="lab-card-header"><div class="lab-icon">📡</div><div><div class="lab-title">Application Layer</div><div class="lab-subtitle">DHCP · DNS · HTTP · Email</div></div></div>
+            <div class="lab-card-body"><div class="lab-description">Full enterprise services: DHCP auto-config, DNS resolution, HTTP web server, SMTP/POP3 email.</div><div class="lab-tech"><span class="tech-tag">DHCP</span><span class="tech-tag">DNS</span><span class="tech-tag">HTTP</span><span class="tech-tag">SMTP/POP3</span></div><a href="applicationLayer.html" class="lab-link">View Lab →</a></div>
         </div>
-
-        <!-- Lab 4: Smart Home IoT -->
-        <div class="lab-card" onclick="window.location.href='smart_home.html'">
-            <div class="lab-card-header">
-                <div class="lab-icon">🏠</div>
-                <div>
-                    <div class="lab-title">Smart Home IoT</div>
-                    <div class="lab-subtitle">Wireless IoT Controller</div>
-                </div>
-            </div>
-            <div class="lab-card-body">
-                <div class="lab-description">
-                    Build a complete smart home ecosystem with Home Gateway, wireless IoT devices (Light, Fan, AC, Speaker, Motion Sensor), and automation rules.
-                </div>
-                <div class="lab-tech">
-                    <span class="tech-tag">Home Gateway</span>
-                    <span class="tech-tag">IoT Registration</span>
-                    <span class="tech-tag">Wireless</span>
-                    <span class="tech-tag">Automation Rules</span>
-                    <span class="tech-tag">Smart Scenes</span>
-                </div>
-                <a href="smart_home.html" class="lab-link">View Lab →</a>
-            </div>
+        <div class="lab-card" data-url="smart_home.html">
+            <div class="lab-card-header"><div class="lab-icon">🏠</div><div><div class="lab-title">Smart Home IoT</div><div class="lab-subtitle">Wireless IoT Controller</div></div></div>
+            <div class="lab-card-body"><div class="lab-description">Home Gateway, IoT devices (Light, Fan, AC, Speaker, Motion Sensor), automation rules, smart scenes.</div><div class="lab-tech"><span class="tech-tag">IoT</span><span class="tech-tag">Wireless</span><span class="tech-tag">Automation</span></div><a href="smart_home.html" class="lab-link">View Lab →</a></div>
         </div>
     </div>
 
-    <!-- Features Section -->
-    <div class="features-section">
-        <div class="section-title" style="margin-bottom: 0.5rem;">
-            <span>✨</span> What You'll Learn
+    <!-- Enterprise Lab Scenarios Section -->
+    <div class="section-title"><span>🏢</span> Enterprise & Branch Scenarios</div>
+    <div class="labs-grid">
+        <div class="lab-card" data-url="service company.html">
+            <div class="lab-card-header"><div class="lab-icon">🏢</div><div><div class="lab-title">Service Company</div><div class="lab-subtitle">VLANs · DHCP Relay · Email</div></div></div>
+            <div class="lab-card-body"><div class="lab-description">Multi-department company with VLSM, router-on-a-stick, centralized DHCP/Email/DNS server.</div><div class="lab-tech"><span class="tech-tag">VLSM</span><span class="tech-tag">DHCP Relay</span><span class="tech-tag">Email</span></div><a href="service company.html" class="lab-link">View Lab →</a></div>
         </div>
-        <div class="features-grid">
-            <div class="feature-item">
-                <div class="feature-icon">🖧</div>
-                <h4>VLAN & Switching</h4>
-                <p>Create VLANs, configure trunk ports, implement inter-VLAN routing using router-on-a-stick.</p>
-            </div>
-            <div class="feature-item">
-                <div class="feature-icon">🔄</div>
-                <h4>Dynamic Routing</h4>
-                <p>Configure RIP v2 and OSPF, understand administrative distance, and hybrid routing environments.</p>
-            </div>
-            <div class="feature-item">
-                <div class="feature-icon">🌐</div>
-                <h4>Application Services</h4>
-                <p>Deploy DHCP, DNS, HTTP, and Email servers — exactly like real enterprise networks.</p>
-            </div>
-            <div class="feature-item">
-                <div class="feature-icon">🏠</div>
-                <h4>IoT & Smart Home</h4>
-                <p>Connect wireless IoT devices, register to gateway, create automation rules and smart scenes.</p>
-            </div>
-            <div class="feature-item">
-                <div class="feature-icon">🛡️</div>
-                <h4>Access Control Lists</h4>
-                <p>Filter traffic with standard and extended ACLs to control network access.</p>
-            </div>
-            <div class="feature-item">
-                <div class="feature-icon">📊</div>
-                <h4>Network Troubleshooting</h4>
-                <p>Use ping, traceroute, show commands to verify and troubleshoot network configurations.</p>
-            </div>
+        <div class="lab-card" data-url="tele-Communication.html">
+            <div class="lab-card-header"><div class="lab-icon">📞</div><div><div class="lab-title">Telecommunication</div><div class="lab-subtitle">ISP · Branch · Core Routing</div></div></div>
+            <div class="lab-card-body"><div class="lab-description">Full ISP integration, multi-branch routing, OSPF+RIP redundancy, NAT, ACL security policies.</div><div class="lab-tech"><span class="tech-tag">ISP</span><span class="tech-tag">NAT</span><span class="tech-tag">ACL</span><span class="tech-tag">Redundancy</span></div><a href="tele-Communication.html" class="lab-link">View Lab →</a></div>
+        </div>
+        <div class="lab-card" data-url="varsity building.html">
+            <div class="lab-card-header"><div class="lab-icon">🏛️</div><div><div class="lab-title">Varsity Building</div><div class="lab-subtitle">Students · Teachers · IT Staff</div></div></div>
+            <div class="lab-card-body"><div class="lab-description">University campus network with VLAN segmentation, inter-building routing, and application services.</div><div class="lab-tech"><span class="tech-tag">VLAN</span><span class="tech-tag">Inter-VLAN</span><span class="tech-tag">DHCP</span></div><a href="varsity building.html" class="lab-link">View Lab →</a></div>
+        </div>
+        <div class="lab-card" data-url="Bank Branch.html">
+            <div class="lab-card-header"><div class="lab-icon">🏦</div><div><div class="lab-title">Bank Branch</div><div class="lab-subtitle">VLSM · OSPF · RIP · ACL</div></div></div>
+            <div class="lab-card-body"><div class="lab-description">Financial network with secure routing, access control lists, and cross-branch service integration.</div><div class="lab-tech"><span class="tech-tag">VLSM</span><span class="tech-tag">OSPF</span><span class="tech-tag">RIP</span><span class="tech-tag">ACL</span></div><a href="Bank Branch.html" class="lab-link">View Lab →</a></div>
+        </div>
+        <div class="lab-card" data-url="It farm.html">
+            <div class="lab-card-header"><div class="lab-icon">🌾</div><div><div class="lab-title">IT Farm</div><div class="lab-subtitle">Server Farm · NAT · PAT</div></div></div>
+            <div class="lab-card-body"><div class="lab-description">Enterprise server farm architecture with NAT/PAT overload, OSPF, and multi-area routing.</div><div class="lab-tech"><span class="tech-tag">Server Farm</span><span class="tech-tag">NAT</span><span class="tech-tag">PAT</span><span class="tech-tag">OSPF</span></div><a href="It farm.html" class="lab-link">View Lab →</a></div>
+        </div>
+        <div class="lab-card" data-url="Library Floor.html">
+            <div class="lab-card-header"><div class="lab-icon">📚</div><div><div class="lab-title">Library Floor</div><div class="lab-subtitle">Branch Network · VLANs</div></div></div>
+            <div class="lab-card-body"><div class="lab-description">Library branch network with VLAN segmentation, trunk links, and inter-VLAN routing.</div><div class="lab-tech"><span class="tech-tag">VLAN</span><span class="tech-tag">Trunk</span><span class="tech-tag">Branch</span></div><a href="Library Floor.html" class="lab-link">View Lab →</a></div>
+        </div>
+    </div>
+
+    <!-- Resources -->
+    <div class="section-title"><span>📖</span> Documentation & Resources</div>
+    <div class="labs-grid">
+        <div class="lab-card" data-url="lab_manual.html">
+            <div class="lab-card-header"><div class="lab-icon">📘</div><div><div class="lab-title">Complete Lab Manual</div><div class="lab-subtitle">12 Experiments · PDF Reader</div></div></div>
+            <div class="lab-card-body"><div class="lab-description">Full CN lab manual with all 12 experiments including cable fabrication, socket programming, and more.</div><div class="lab-tech"><span class="tech-tag">PDF</span><span class="tech-tag">Guide</span><span class="tech-tag">Experiments</span></div><a href="lab_manual.html" class="lab-link">Open Manual →</a></div>
         </div>
     </div>
 
     <!-- Footer -->
-    <!-- Footer -->
-<div class="footer">
-    <div class="footer-content">
-        <div class="footer-info">
-            <div class="creator-name">Nazmul Islam Abir (43)</div>
-            <div class="department">Department of Computer Science & Engineering</div>
-            <div class="university">Premier University, Chittagong</div>
+    <div class="footer">
+        <div class="footer-content">
+            <div><div class="creator-name">Nazmul Islam Abir (43)</div><div>Department of Computer Science & Engineering</div><div>Premier University, Chittagong</div></div>
+            <div class="footer-links"><a href="https://github.com/nazmul-islam-abir">GitHub</a></div>
         </div>
-        <div class="footer-links">
-            <a href="https://github.com/nazmul-islam-abir">GitHub</a>
-           
-        </div>
-    </div>
-    <div class="copyright">
-        © 2026 · Computer Networks Lab | Complete Hands-on Labs with Cisco Packet Tracer
+        <div class="copyright">© 2026 · Computer Networks Lab | Complete Hands-on Labs with Cisco Packet Tracer</div>
     </div>
 </div>
-</div>
+
+<script>
+    (function() {
+        // Mobile menu toggle
+        const toggleBtn = document.getElementById('mobileMenuBtn');
+        const navMenu = document.getElementById('navMenu');
+        if (toggleBtn && navMenu) {
+            toggleBtn.addEventListener('click', () => {
+                navMenu.classList.toggle('active');
+                toggleBtn.classList.toggle('active');
+            });
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', () => {
+                    navMenu.classList.remove('active');
+                    toggleBtn.classList.remove('active');
+                });
+            });
+        }
+
+        // Lab cards click navigation
+        document.querySelectorAll('.lab-card').forEach(card => {
+            const link = card.querySelector('.lab-link');
+            if (link) {
+                card.addEventListener('click', (e) => {
+                    if (e.target.closest('.lab-link')) return;
+                    window.location.href = link.getAttribute('href');
+                });
+            }
+        });
+
+        // Active nav highlight based on current page
+        const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+        document.querySelectorAll('.nav-link').forEach(link => {
+            const href = link.getAttribute('href');
+            if (href === currentPath || (currentPath === 'index.html' && href === 'index.html')) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });
+    })();
+</script>
 </body>
 </html>

@@ -19,6 +19,28 @@
 </head>
 <body>
 
+    <!-- ========== NAVBAR INJECTION ========== -->
+<div id="navbar-container"></div>
+<script>
+    fetch('navbar.html')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('navbar-container').innerHTML = data;
+            
+            // Re-run navbar's initialization after loading
+            if (typeof window.initNavbar === 'undefined') {
+                // Small delay to ensure DOM is ready
+                setTimeout(() => {
+                    const navScript = document.querySelector('#navbar-container script');
+                    if (navScript) {
+                        eval(navScript.textContent);
+                    }
+                }, 50);
+            }
+        })
+        .catch(error => console.error('Navbar loading error:', error));
+</script>
+<!-- ========== END NAVBAR ========== -->
 <div class="container">
     <h1>Branch 1: Network Configuration Manual</h1>
 

@@ -90,6 +90,7 @@
             align-items: center;
             gap: 0.3rem;
             list-style: none;
+            flex-wrap: wrap;
         }
 
         .nav-item {
@@ -191,17 +192,12 @@
         }
 
         /* Responsive Styles */
-        @media screen and (max-width: 950px) {
-            .nav-container {
-                padding: 0.7rem 1.5rem;
-            }
-            .nav-link {
-                padding: 0.5rem 0.9rem;
-                font-size: 0.9rem;
-            }
+        @media screen and (max-width: 1100px) {
+            .nav-menu { gap: 0.1rem; }
+            .nav-link { padding: 0.5rem 0.8rem; font-size: 0.85rem; }
         }
 
-        @media screen and (max-width: 820px) {
+        @media screen and (max-width: 950px) {
             .menu-toggle {
                 display: flex;
             }
@@ -221,6 +217,8 @@
                 border-radius: 0 0 28px 28px;
                 z-index: 1000;
                 align-items: stretch;
+                max-height: 80vh;
+                overflow-y: auto;
             }
             .nav-menu.active {
                 left: 0;
@@ -275,8 +273,9 @@
                 <div class="hamburger"></div>
             </button>
 
-            <!-- navigation links - includes HOME and all labs -->
+            <!-- navigation links - includes ALL pages -->
             <ul class="nav-menu" id="navMenu">
+                <!-- Core Labs -->
                 <li class="nav-item">
                     <a href="#" class="nav-link" data-nav="home">
                         <span class="nav-icon">🏠</span>
@@ -307,12 +306,52 @@
                         <span>Smart Home IoT</span>
                     </a>
                 </li>
+                
+                <!-- Enterprise Scenarios -->
                 <li class="nav-item">
-    <a href="#" class="nav-link" data-nav="lab_manual">
-        <span class="nav-icon">📖</span>
-        <span>Lab Manual</span>
-    </a>
-</li>
+                    <a href="#" class="nav-link" data-nav="service_company">
+                        <span class="nav-icon">🏢</span>
+                        <span>Service Co.</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-nav="telecom">
+                        <span class="nav-icon">📞</span>
+                        <span>Telecom</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-nav="varsity">
+                        <span class="nav-icon">🏛️</span>
+                        <span>Varsity</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-nav="bank">
+                        <span class="nav-icon">🏦</span>
+                        <span>Bank</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-nav="it_farm">
+                        <span class="nav-icon">🌾</span>
+                        <span>IT Farm</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-nav="library">
+                        <span class="nav-icon">📚</span>
+                        <span>Library</span>
+                    </a>
+                </li>
+                
+                <!-- Resources -->
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-nav="lab_manual">
+                        <span class="nav-icon">📖</span>
+                        <span>Lab Manual</span>
+                    </a>
+                </li>
             </ul>
         </div>
     </nav>
@@ -320,22 +359,53 @@
 
 <script>
     (function() {
-        // -------- Helper: detect which page we are on based on URL or body classes --------
-       function getCurrentPageId() {
-    const path = window.location.pathname;
-    const filename = path.split('/').pop();
-    
-    if (filename === 'index.html' || filename === '' || filename === '/' || filename === 'index') {
-        return 'home';
-    }
-    if (filename.includes('lab_manual') || filename.includes('CN_lab_manual')) return 'lab_manual';  // Add this line
-    if (filename.includes('vlan') || filename.includes('vlan_subnet')) return 'vlan';
-    if (filename.includes('ospf_rip') || filename.includes('rip_ospf')) return 'rip_ospf';
-    if (filename.includes('applicationLayer') || filename.includes('app_layer')) return 'app_layer';
-    if (filename.includes('smart_home') || filename.includes('home')) return 'smart_home';
-    
-    return 'home';
-}
+        // -------- Page mapping (ALL pages mapped) --------
+        function getPageUrl(navId) {
+            const pageMap = {
+                'home': './index.html',
+                'vlan': './vlan_subnet.html',
+                'rip_ospf': './ospf_rip.html',
+                'app_layer': './applicationLayer.html',
+                'smart_home': './smart_home.html',
+                'service_company': './service company.html',
+                'telecom': './tele-Communication.html',
+                'varsity': './varsity building.html',
+                'bank': './Bank Branch.html',
+                'it_farm': './It farm.html',
+                'library': './Library Floor.html',
+                'lab_manual': './lab_manual.html'
+            };
+            return pageMap[navId] || './index.html';
+        }
+
+        // -------- Helper: detect which page we are on based on URL ---------
+        function getCurrentPageId() {
+            const path = window.location.pathname;
+            const filename = path.split('/').pop();
+            
+            // Home detection
+            if (filename === 'index.html' || filename === '' || filename === '/' || filename === 'index') {
+                return 'home';
+            }
+            // Core Labs
+            if (filename.includes('vlan_subnet') || filename.includes('vlan')) return 'vlan';
+            if (filename.includes('ospf_rip') || filename.includes('rip_ospf')) return 'rip_ospf';
+            if (filename.includes('applicationLayer') || filename.includes('app_layer')) return 'app_layer';
+            if (filename.includes('smart_home')) return 'smart_home';
+            
+            // Enterprise Scenarios
+            if (filename.includes('service company') || filename.includes('service_company')) return 'service_company';
+            if (filename.includes('tele-Communication') || filename.includes('telecom')) return 'telecom';
+            if (filename.includes('varsity building') || filename.includes('varsity')) return 'varsity';
+            if (filename.includes('Bank Branch') || filename.includes('bank')) return 'bank';
+            if (filename.includes('It farm') || filename.includes('it_farm')) return 'it_farm';
+            if (filename.includes('Library Floor') || filename.includes('library')) return 'library';
+            
+            // Resources
+            if (filename.includes('lab_manual') || filename.includes('CN_lab_manual')) return 'lab_manual';
+            
+            return 'home';
+        }
 
         // Mark active link based on current page
         function setActiveNavLink() {
@@ -350,26 +420,6 @@
                 }
             });
         }
-
-        // Navigation mapping: define the relative URL for each page
-        function getPageUrl(navId) {
-    switch(navId) {
-        case 'home':
-            return './index.html';
-        case 'vlan':
-            return './vlan_subnet.html';
-        case 'rip_ospf':
-            return './ospf_rip.html';
-        case 'app_layer':
-            return './applicationLayer.html';
-        case 'smart_home':
-            return './smart_home.html';
-        case 'lab_manual':  // Add this line
-            return './lab_manual.html';  // Add this line
-        default:
-            return './index.html';
-    }
-}
 
         // attach click handlers to all nav links + brand home
         function initNavigation() {
@@ -406,7 +456,7 @@
                     toggleBtn.classList.toggle('active');
                 });
 
-                // Close mobile menu after clicking on any nav link (for better UX)
+                // Close mobile menu after clicking on any nav link
                 const navLinks = document.querySelectorAll('.nav-link');
                 navLinks.forEach(link => {
                     link.addEventListener('click', () => {
